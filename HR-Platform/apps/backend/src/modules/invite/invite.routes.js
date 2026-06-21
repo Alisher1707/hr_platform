@@ -1,0 +1,84 @@
+import express from 'express';
+import Joi from 'joi';
+import * as inviteController from './invite.controller.js';
+import { authenticate, authorize } from '../auth/auth.middleware.js';
+import { validateParams, validateQuery, commonSchemas } from '../../shared/middleware/validate.js';
+import { inviteLimiter } from '../../shared/middleware/rateLimiter.js';
+import { USER_ROLES } from '../../config/constants.js';
+
+const router = express.Router();
+
+/**
+ * Validation Schemas
+ */
+
+const uuidParamSchema = Joi.object({
+  id: commonSchemas.uuid,
+});
+
+const tokenParamSchema = Joi.object({
+  token: Joi.string().length(64).required(),
+});
+
+const inviteQuerySchema = Joi.object({
+  isActive: Joi.boolean(),
+  createdBy: commonSchemas.uuid.optional(),
+});
+
+/**
+ * Routes
+ */
+
+// POST /api/v1/invites - Create new invite (SUPER_ADMIN only)
+router.post(
+  '/',
+  authenticate,
+  authorize(USER_ROLES.SUPER_ADMIN),
+  inviteLimiter,
+  inviteController.createInvite
+);
+
+// GET /api/v1/invites - Get all invites (SUPER_ADMIN only)
+router.get(
+  '/',
+  authenticate,
+  authorize(USER_ROLES.SUPER_ADMIN),
+  validateQuery(inviteQuerySchema),
+  inviteController.getAllInvites
+);
+
+// GET /api/v1/invites/validate/:token - Validate token (public)
+router.get(
+  '/validate/:token',
+  validateParams(tokenParamSchema),
+  inviteController.validateToken
+);
+
+// GET /api/v1/invites/:id - Get invite by ID (SUPER_ADMIN only)
+router.get(
+  '/:id',
+  authenticate,
+  authorize(USER_ROLES.SUPER_ADMIN),
+  validateParams(uuidParamSchema),
+  inviteController.getInviteById
+);
+
+// PATCH /api/v1/invites/:id/deactivate - Deactivate invite (SUPER_ADMIN only)
+router.patch(
+  '/:id/deactivate',
+  authenticate,
+  authorize(USER_ROLES.SUPER_ADMIN),
+  validateParams(uuidParamSchema),
+  inviteController.deactivateInvite
+);
+
+// DELETE /api/v1/invites/:id - Delete invite (SUPER_ADMIN only)
+router.delete(
+  '/:id',
+  authenticate,
+  authorize(USER_ROLES.SUPER_ADMIN),
+  validateParams(uuidParamSchema),
+  inviteController.deleteInvite
+);
+
+export default router;

@@ -1,0 +1,22 @@
+{
+  "name": "hr-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HR Platform MVP - Recruiting System with Kanban Board",
+  "scripts": {
+    "dev": "pnpm --parallel run dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm --recursive run build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "keywords": [
+    "hr",
+    "recruiting",
+    "kanban",
+    "monorepo"
+  ],
+  "author": "HR Platform Team",
+  "license": "MIT"
+}

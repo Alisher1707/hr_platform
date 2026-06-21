@@ -1,0 +1,95 @@
+import express from 'express';
+import Joi from 'joi';
+import * as employeesController from './employees.controller.js';
+import { authenticate, authorize } from '../auth/auth.middleware.js';
+import { validate, validateParams, validateQuery, commonSchemas } from '../../shared/middleware/validate.js';
+import { USER_ROLES } from '../../config/constants.js';
+
+const router = express.Router();
+
+/**
+ * Validation Schemas
+ */
+
+const createEmployeeSchema = Joi.object({
+  firstName: Joi.string().min(2).max(100).required(),
+  lastName: Joi.string().min(2).max(100).required(),
+  phone: commonSchemas.phone.optional().allow('', null),
+  address: Joi.string().max(500).optional().allow('', null),
+  birthDate: commonSchemas.date.optional().allow(null),
+  experience: Joi.number().integer().min(0).max(100).default(0),
+  position: Joi.string().max(200).optional().allow('', null),
+  notes: Joi.string().max(1000).optional().allow('', null),
+});
+
+const updateEmployeeSchema = Joi.object({
+  firstName: Joi.string().min(2).max(100),
+  lastName: Joi.string().min(2).max(100),
+  phone: commonSchemas.phone.optional().allow('', null),
+  address: Joi.string().max(500).optional().allow('', null),
+  birthDate: commonSchemas.date.optional().allow(null),
+  experience: Joi.number().integer().min(0).max(100),
+}).min(1); // At least one field required
+
+const uuidParamSchema = Joi.object({
+  id: commonSchemas.uuid,
+});
+
+const employeeQuerySchema = Joi.object({
+  search: Joi.string().max(100).optional(),
+  createdBy: commonSchemas.uuid.optional(),
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
+});
+
+/**
+ * Routes
+ */
+
+// POST /api/v1/employees - Create employee (ADMIN only)
+router.post(
+  '/',
+  authenticate,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  validate(createEmployeeSchema),
+  employeesController.createEmployee
+);
+
+// GET /api/v1/employees - Get all employees (ADMIN, HR)
+router.get(
+  '/',
+  authenticate,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.HR),
+  validateQuery(employeeQuerySchema),
+  employeesController.getAllEmployees
+);
+
+// GET /api/v1/employees/:id - Get employee by ID (ADMIN, HR)
+router.get(
+  '/:id',
+  authenticate,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.HR),
+  validateParams(uuidParamSchema),
+  employeesController.getEmployeeById
+);
+
+// PUT /api/v1/employees/:id - Update employee (ADMIN only)
+router.put(
+  '/:id',
+  authenticate,
+  authorize(USER_ROLES.ADMIN),
+  validateParams(uuidParamSchema),
+  validate(updateEmployeeSchema),
+  employeesController.updateEmployee
+);
+
+// DELETE /api/v1/employees/:id - Delete employee (ADMIN only)
+router.delete(
+  '/:id',
+  authenticate,
+  authorize(USER_ROLES.ADMIN),
+  validateParams(uuidParamSchema),
+  employeesController.deleteEmployee
+);
+
+export default router;

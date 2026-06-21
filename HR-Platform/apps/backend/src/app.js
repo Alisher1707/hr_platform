@@ -1,0 +1,155 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import { config, validateEnv } from './config/env.js';
+import { testConnection } from './config/database.js';
+import { generalLimiter } from './shared/middleware/rateLimiter.js';
+import { errorHandler, notFoundHandler } from './shared/middleware/errorHandler.js';
+
+// Import routes
+import authRoutes from './modules/auth/auth.routes.js';
+import inviteRoutes from './modules/invite/invite.routes.js';
+import employeesRoutes from './modules/employees/employees.routes.js';
+import applicationsRoutes from './modules/applications/applications.routes.js';
+
+/**
+ * Initialize Express Application
+ */
+const app = express();
+
+/**
+ * Validate environment variables
+ */
+try {
+  validateEnv();
+} catch (error) {
+  console.error('❌ Environment validation failed:', error.message);
+  process.exit(1);
+}
+
+/**
+ * Security Middleware
+ */
+app.use(helmet()); // Security headers
+
+/**
+ * CORS Configuration
+ */
+app.use(
+  cors({
+    origin: config.frontendUrl,
+    credentials: true, // Allow cookies
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+/**
+ * Body Parser Middleware
+ */
+app.use(express.json({ limit: '10mb' })); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded bodies
+
+/**
+ * Cookie Parser Middleware
+ */
+app.use(cookieParser());
+
+/**
+ * Rate Limiting
+ */
+app.use(generalLimiter);
+
+/**
+ * Health Check Endpoint
+ */
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'HR Platform API is running',
+    timestamp: new Date().toISOString(),
+    environment: config.env,
+  });
+});
+
+/**
+ * API Routes
+ */
+const API_PREFIX = '/api/v1';
+
+app.use(`${API_PREFIX}/auth`, authRoutes);
+app.use(`${API_PREFIX}/invites`, inviteRoutes);
+app.use(`${API_PREFIX}/employees`, employeesRoutes);
+app.use(`${API_PREFIX}/applications`, applicationsRoutes);
+
+/**
+ * API Documentation Root
+ */
+app.get(API_PREFIX, (req, res) => {
+  res.json({
+    success: true,
+    message: 'HR Platform API v1',
+    version: '1.0.0',
+    endpoints: {
+      auth: `${API_PREFIX}/auth`,
+      invites: `${API_PREFIX}/invites`,
+      employees: `${API_PREFIX}/employees`,
+      applications: `${API_PREFIX}/applications`,
+    },
+    documentation: 'See README.md for API documentation',
+  });
+});
+
+/**
+ * 404 Handler - Must be after all routes
+ */
+app.use(notFoundHandler);
+
+/**
+ * Global Error Handler - Must be last
+ */
+app.use(errorHandler);
+
+/**
+ * Start Server
+ */
+async function startServer() {
+  try {
+    // Test database connection
+    await testConnection();
+
+    // Start listening
+    app.listen(config.port, () => {
+      console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🚀 HR Platform Backend Server Started!');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`📍 Environment:  ${config.env}`);
+      console.log(`🌐 Server URL:   http://localhost:${config.port}`);
+      console.log(`🔗 API Endpoint: http://localhost:${config.port}${API_PREFIX}`);
+      console.log(`💚 Health Check: http://localhost:${config.port}/health`);
+      console.log(`🎨 Frontend URL: ${config.frontendUrl}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error.message);
+    process.exit(1);
+  }
+}
+
+// Start the server
+startServer();
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Unhandled Rejection:', err);
+  process.exit(1);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+  process.exit(1);
+});
+
+export default app;
