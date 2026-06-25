@@ -16,7 +16,7 @@ const createEmployeeSchema = Joi.object({
   lastName: Joi.string().min(2).max(100).required(),
   phone: commonSchemas.phone.optional().allow('', null),
   address: Joi.string().max(500).optional().allow('', null),
-  birthDate: commonSchemas.date.optional().allow(null),
+  birthDate: commonSchemas.date.optional().allow('', null),
   experience: Joi.number().integer().min(0).max(100).default(0),
   position: Joi.string().max(200).optional().allow('', null),
   notes: Joi.string().max(1000).optional().allow('', null),
@@ -27,7 +27,7 @@ const updateEmployeeSchema = Joi.object({
   lastName: Joi.string().min(2).max(100),
   phone: commonSchemas.phone.optional().allow('', null),
   address: Joi.string().max(500).optional().allow('', null),
-  birthDate: commonSchemas.date.optional().allow(null),
+  birthDate: commonSchemas.date.optional().allow('', null),
   experience: Joi.number().integer().min(0).max(100),
 }).min(1); // At least one field required
 

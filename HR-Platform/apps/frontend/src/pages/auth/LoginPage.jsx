@@ -63,8 +63,8 @@ export function LoginPage() {
 
     if (!formData.password) {
       errors.password = 'Parol majburiy';
-    } else if (formData.password.length < 6) {
-      errors.password = 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak';
+    } else if (formData.password.length < 8) {
+      errors.password = 'Parol kamida 8 ta belgidan iborat bo\'lishi kerak';
     }
 
     setFormErrors(errors);

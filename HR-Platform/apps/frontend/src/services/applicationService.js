@@ -11,7 +11,31 @@ export const applicationService = {
    */
   async getApplications(params = {}) {
     const response = await api.get('/applications', { params });
-    return response.data.data.applications;
+    const appsGrouped = response.data.data.applications;
+
+    const flatApps = [];
+    if (appsGrouped) {
+      if (Array.isArray(appsGrouped)) {
+        flatApps.push(...appsGrouped);
+      } else {
+        Object.values(appsGrouped).forEach(list => {
+          if (Array.isArray(list)) {
+            flatApps.push(...list);
+          }
+        });
+      }
+    }
+
+    return flatApps.map(app => ({
+      ...app,
+      firstName: app.employee?.first_name || '',
+      lastName: app.employee?.last_name || '',
+      phone: app.employee?.phone || '',
+      createdAt: app.created_at,
+      experience: app.employee?.experience || 0,
+      address: app.employee?.address || '',
+      assignedTo: app.assigned_to?.id || app.assigned_to || '',
+    }));
   },
 
   /**

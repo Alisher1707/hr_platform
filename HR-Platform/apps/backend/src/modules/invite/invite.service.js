@@ -11,7 +11,7 @@ import { HTTP_STATUS, MESSAGES } from '../../config/constants.js';
 /**
  * Create invite token
  */
-export async function createInvite(createdBy) {
+export async function createInvite(createdBy, position = null, requirements = null) {
   // Generate unique token
   const token = generateInviteToken();
 
@@ -21,10 +21,10 @@ export async function createInvite(createdBy) {
 
   // Insert into database
   const result = await query(
-    `INSERT INTO invites (token, created_by, expires_at, is_active)
-     VALUES ($1, $2, $3, $4)
-     RETURNING id, token, expires_at, is_active, created_at`,
-    [token, createdBy, expiresAt, true]
+    `INSERT INTO invites (token, created_by, expires_at, is_active, position, requirements)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING id, token, expires_at, is_active, created_at, position, requirements`,
+    [token, createdBy, expiresAt, true, position, requirements ? JSON.stringify(requirements) : null]
   );
 
   const invite = result.rows[0];
@@ -71,6 +71,8 @@ export async function getAllInvites(filters = {}) {
       i.used_at,
       i.is_active,
       i.created_at,
+      i.position,
+      i.requirements,
       creator.first_name as creator_first_name,
       creator.last_name as creator_last_name,
       creator.email as creator_email,
@@ -94,6 +96,8 @@ export async function getAllInvites(filters = {}) {
     used_at: row.used_at,
     is_active: row.is_active,
     created_at: row.created_at,
+    position: row.position,
+    requirements: row.requirements,
     invite_url: `${config.frontendUrl}/register?token=${row.token}`,
     is_expired: new Date(row.expires_at) < new Date(),
     is_used: !!row.used_at,
@@ -126,6 +130,8 @@ export async function getInviteById(id) {
       i.used_at,
       i.is_active,
       i.created_at,
+      i.position,
+      i.requirements,
       creator.first_name as creator_first_name,
       creator.last_name as creator_last_name,
       usedby.first_name as used_by_first_name,
@@ -152,6 +158,8 @@ export async function getInviteById(id) {
     used_at: row.used_at,
     is_active: row.is_active,
     created_at: row.created_at,
+    position: row.position,
+    requirements: row.requirements,
     invite_url: `${config.frontendUrl}/register?token=${row.token}`,
     is_expired: new Date(row.expires_at) < new Date(),
     is_used: !!row.used_at,
@@ -173,7 +181,7 @@ export async function getInviteById(id) {
  */
 export async function validateInviteToken(token) {
   const result = await query(
-    `SELECT id, token, expires_at, used_at, is_active
+    `SELECT id, token, expires_at, used_at, is_active, position, requirements
      FROM invites
      WHERE token = $1`,
     [token]
@@ -219,6 +227,8 @@ export async function validateInviteToken(token) {
       id: invite.id,
       token: invite.token,
       expires_at: invite.expires_at,
+      position: invite.position,
+      requirements: invite.requirements,
     },
   };
 }

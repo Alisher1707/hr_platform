@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat docker-compose.yml)",
+      "Bash(docker --version)",
+      "Bash(npx kill-port 5000 5173)",
+      "Bash(git clean -n)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -2,7 +2,7 @@ import express from 'express';
 import Joi from 'joi';
 import * as inviteController from './invite.controller.js';
 import { authenticate, authorize } from '../auth/auth.middleware.js';
-import { validateParams, validateQuery, commonSchemas } from '../../shared/middleware/validate.js';
+import { validate, validateParams, validateQuery, commonSchemas } from '../../shared/middleware/validate.js';
 import { inviteLimiter } from '../../shared/middleware/rateLimiter.js';
 import { USER_ROLES } from '../../config/constants.js';
 
@@ -11,6 +11,11 @@ const router = express.Router();
 /**
  * Validation Schemas
  */
+
+const createInviteSchema = Joi.object({
+  position: Joi.string().max(200).optional().allow('', null),
+  requirements: Joi.array().items(Joi.string()).optional().allow(null),
+});
 
 const uuidParamSchema = Joi.object({
   id: commonSchemas.uuid,
@@ -35,6 +40,7 @@ router.post(
   authenticate,
   authorize(USER_ROLES.SUPER_ADMIN),
   inviteLimiter,
+  validate(createInviteSchema),
   inviteController.createInvite
 );
 

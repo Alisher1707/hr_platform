@@ -102,7 +102,7 @@ export const commonSchemas = {
   email: Joi.string().email().required(),
   password: Joi.string().min(8).max(128).required(),
   phone: Joi.string().pattern(/^[\d\s\-\+\(\)]+$/).min(10).max(20),
-  date: Joi.date().iso(),
+  date: Joi.date().iso().allow('', null),
   pagination: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(10),

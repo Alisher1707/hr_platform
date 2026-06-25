@@ -62,6 +62,11 @@ export function authorize(...allowedRoles) {
       return errorResponse(res, MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
     }
 
+    // Bypass check for SUPER_ADMIN role
+    if (req.user.role === USER_ROLES.SUPER_ADMIN) {
+      return next();
+    }
+
     if (!allowedRoles.includes(req.user.role)) {
       return errorResponse(
         res,

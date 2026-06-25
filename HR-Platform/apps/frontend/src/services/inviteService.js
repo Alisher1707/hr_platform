@@ -8,8 +8,8 @@ export const inviteService = {
   /**
    * Create invite link
    */
-  async createInvite() {
-    const response = await api.post('/invites');
+  async createInvite(data = {}) {
+    const response = await api.post('/invites', data);
     return response.data.data.invite;
   },
 

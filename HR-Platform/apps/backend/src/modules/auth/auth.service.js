@@ -71,7 +71,7 @@ export async function registerUser(inviteToken, userData) {
 
     // Validate invite token
     const inviteResult = await client.query(
-      `SELECT id, expires_at, used_at, is_active
+      `SELECT id, expires_at, used_at, is_active, position, requirements, created_by
        FROM invites
        WHERE token = $1`,
       [inviteToken]
@@ -119,14 +119,47 @@ export async function registerUser(inviteToken, userData) {
     const passwordHash = await bcrypt.hash(userData.password, SALT_ROUNDS);
 
     // Create user
+    const userRole = invite.position ? 'EMPLOYEE' : (userData.role || 'ADMIN');
+
     const userResult = await client.query(
       `INSERT INTO users (email, password_hash, role, first_name, last_name)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, email, role, first_name, last_name, is_active, created_at`,
-      [userData.email, passwordHash, userData.role || 'ADMIN', userData.firstName, userData.lastName]
+      [userData.email, passwordHash, userRole, userData.firstName, userData.lastName]
     );
 
     const user = userResult.rows[0];
+
+    // Automatically create employee and application records if a position is set
+    if (invite.position) {
+      const employeeResult = await client.query(
+        `INSERT INTO employees (first_name, last_name, created_by)
+         VALUES ($1, $2, $3)
+         RETURNING id`,
+        [user.first_name, user.last_name, invite.created_by]
+      );
+      const employeeId = employeeResult.rows[0].id;
+
+      const notes = invite.requirements
+        ? (typeof invite.requirements === 'string'
+            ? invite.requirements
+            : JSON.stringify(invite.requirements))
+        : null;
+
+      const applicationResult = await client.query(
+        `INSERT INTO applications (employee_id, status, position, notes, order_index)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id`,
+        [employeeId, 'KELDI', invite.position, notes, 0]
+      );
+      const applicationId = applicationResult.rows[0].id;
+
+      await client.query(
+        `INSERT INTO application_history (application_id, changed_by, new_status, comment)
+         VALUES ($1, $2, $3, $4)`,
+        [applicationId, invite.created_by, 'KELDI', `Taklifnoma orqali ro'yxatdan o'tdi. Lavozim: ${invite.position}`]
+      );
+    }
 
     // Mark invite as used
     await client.query(

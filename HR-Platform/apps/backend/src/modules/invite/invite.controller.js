@@ -13,7 +13,8 @@ import * as inviteService from './invite.service.js';
  * Create new invite token
  */
 export const createInvite = asyncHandler(async (req, res) => {
-  const invite = await inviteService.createInvite(req.user.id);
+  const { position, requirements } = req.body;
+  const invite = await inviteService.createInvite(req.user.id, position, requirements);
 
   return createdResponse(res, { invite }, MESSAGES.INVITE_CREATED);
 });

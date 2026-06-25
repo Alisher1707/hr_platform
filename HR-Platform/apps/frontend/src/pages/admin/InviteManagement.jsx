@@ -5,7 +5,43 @@ import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import EmptyState from '../../components/ui/EmptyState';
+import Modal from '../../components/ui/Modal';
+import Input from '../../components/ui/Input';
 import useToast from '../../hooks/useToast';
+
+// Job templates directly derived from LAVOZIM YO'RIQNOMASI.md and generic roles
+const JOB_TEMPLATES = {
+  'Tozalik xodimasi': [
+    'Kiyim toza va tartibli (shaxsiy ko‘rinish)',
+    'Ish anjomlari va vositalari tayyor bo‘lishi (paqir, latta, vositalar)',
+    'Xonalarda ortiqcha chiqindilar yo‘qligi (chiqindi qutilarini tekshirish)',
+    'Pol toza va artilgan holatda bo‘lishi',
+    'Deraza tokchalari changsiz bo‘lishi (podokonnik)',
+    'Chiqindilar to‘liq olib chiqib tashlanganligi',
+    'Kuller toza holatda bo‘lishi',
+    'Parta va stul oyoqlari tozaligi (haftalik vazifa)',
+    'Oynalar dog‘siz va toza bo‘lishi (haftalik vazifa)'
+  ],
+  'Dasturchi': [
+    'Clean Code yozish va standartlarga rioya qilish',
+    'Kodni Git-ga o\'z vaqtida yuklash va ko\'rib chiqishga topshirish',
+    'Kundalik Scrum uchrashuvlarida qatnashish',
+    'Buglar va xatoliklarni o\'z vaqtida tuzatish',
+    'Code review jarayonida faol ishtirok etish'
+  ],
+  'HR Manager': [
+    'Nomzodlarni intervyuga chaqirish va suhbat o\'tkazish',
+    'Ishchilar ma\'lumotlarini to\'ldirish va yangilab borish',
+    'Kanban doskasini faol yuritish',
+    'Tizim taklifnomalarini boshqarish'
+  ],
+  'SMM mutaxassisi': [
+    'Ijtimoiy tarmoqlar uchun haftalik kontent-plan tayyorlash',
+    'Postlar va dizaynlarni o\'z vaqtida joylashtirish',
+    'Obunachilar sharhlari va xabarlariga javob berish',
+    'Reklama kampaniyalarini sozlash va tahlil qilish'
+  ]
+};
 
 /**
  * InviteManagement Component
@@ -16,6 +52,13 @@ export function InviteManagement() {
   const [loading, setLoading] = useState(true);
   const [invites, setInvites] = useState([]);
   const [creating, setCreating] = useState(false);
+
+  // Form states inside Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState('Tozalik xodimasi');
+  const [customJob, setCustomJob] = useState('');
+  const [requirements, setRequirements] = useState(JOB_TEMPLATES['Tozalik xodimasi']);
+  const [customReq, setCustomReq] = useState('');
 
   const fetchInvites = async () => {
     try {
@@ -33,17 +76,46 @@ export function InviteManagement() {
     fetchInvites();
   }, []);
 
-  const handleCreateInvite = async () => {
+  const handleOpenModal = () => {
+    setSelectedJob('Tozalik xodimasi');
+    setCustomJob('');
+    setRequirements(JOB_TEMPLATES['Tozalik xodimasi']);
+    setCustomReq('');
+    setIsModalOpen(true);
+  };
+
+  const handleCreateInvite = async (e) => {
+    e.preventDefault();
     setCreating(true);
     try {
-      const newInvite = await inviteService.createInvite();
+      const position = selectedJob === 'Boshqa' ? customJob : selectedJob;
+      const newInvite = await inviteService.createInvite({
+        position,
+        requirements
+      });
       toast.success('Yangi taklifnoma muvaffaqiyatli yaratildi!');
       setInvites((prev) => [newInvite, ...prev]);
+      setIsModalOpen(false);
     } catch (err) {
       toast.error('Taklifnoma yaratishda xatolik yuz berdi');
       console.error(err);
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleToggleRequirement = (req) => {
+    if (requirements.includes(req)) {
+      setRequirements(requirements.filter((r) => r !== req));
+    } else {
+      setRequirements([...requirements, req]);
+    }
+  };
+
+  const handleAddCustomReq = () => {
+    if (customReq.trim() && !requirements.includes(customReq.trim())) {
+      setRequirements([...requirements, customReq.trim()]);
+      setCustomReq('');
     }
   };
 
@@ -109,8 +181,7 @@ export function InviteManagement() {
         <div className="page-header-right">
           <Button 
             variant="primary" 
-            onClick={handleCreateInvite} 
-            loading={creating}
+            onClick={handleOpenModal} 
             icon="🔗"
           >
             Havola yaratish
@@ -125,7 +196,7 @@ export function InviteManagement() {
             text="Hozircha hech qanday taklifnoma yaratilmagan. Yuqoridagi tugmani bosib yangi havola yaratishingiz mumkin."
             icon="🔗"
             action={
-              <Button variant="primary" onClick={handleCreateInvite} loading={creating}>
+              <Button variant="primary" onClick={handleOpenModal}>
                 Yangi havola yaratish
               </Button>
             }
@@ -136,6 +207,7 @@ export function InviteManagement() {
               <thead>
                 <tr>
                   <th>Yaratilgan sana</th>
+                  <th>Lavozim</th>
                   <th>Amal qilish muddati</th>
                   <th>Yaratuvchi</th>
                   <th>Ishlatuvchi</th>
@@ -160,6 +232,11 @@ export function InviteManagement() {
                   return (
                     <tr key={inv.id}>
                       <td>{formatDate(inv.created_at)}</td>
+                      <td>
+                        <strong style={{ color: 'var(--accent)' }}>
+                          {inv.position || 'Umumiy (Lavozimsiz)'}
+                        </strong>
+                      </td>
                       <td>{formatDate(inv.expires_at)}</td>
                       <td>
                         {inv.created_by 
@@ -211,6 +288,131 @@ export function InviteManagement() {
           </div>
         )}
       </Card>
+
+      {/* Invite Creation Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Yangi taklifnoma yaratish"
+        size="md"
+      >
+        <form onSubmit={handleCreateInvite} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div>
+            <label className="form-label font-semibold" style={{ marginBottom: '0.5rem', display: 'block' }}>
+              Lavozim tanlash
+            </label>
+            <select
+              className="form-input"
+              value={selectedJob}
+              onChange={(e) => {
+                const job = e.target.value;
+                setSelectedJob(job);
+                if (job !== 'Boshqa') {
+                  setRequirements(JOB_TEMPLATES[job] || []);
+                } else {
+                  setRequirements([]);
+                }
+              }}
+              style={{ 
+                width: '100%', 
+                padding: '0.625rem', 
+                borderRadius: 'var(--radius-md)', 
+                border: '1px solid var(--border)', 
+                background: 'var(--bg-card)', 
+                color: 'var(--text-primary)' 
+              }}
+            >
+              <option value="Tozalik xodimasi">Tozalik xodimasi (LAVOZIM YO'RIQNOMASI.md)</option>
+              <option value="Dasturchi">Dasturchi</option>
+              <option value="HR Manager">HR Manager</option>
+              <option value="SMM mutaxassisi">SMM mutaxassisi</option>
+              <option value="Boshqa">Boshqa (Qo'lda kiritish...)</option>
+            </select>
+          </div>
+
+          {selectedJob === 'Boshqa' && (
+            <Input
+              label="Lavozim nomini kiriting"
+              type="text"
+              value={customJob}
+              onChange={(e) => setCustomJob(e.target.value)}
+              placeholder="Masalan: Grafik dizayner"
+              required
+            />
+          )}
+
+          <div>
+            <label className="form-label font-semibold" style={{ marginBottom: '0.5rem', display: 'block' }}>
+              Lavozim talablari va vazifalari
+            </label>
+            
+            <div style={{ 
+              maxHeight: '200px', 
+              overflowY: 'auto', 
+              border: '1px solid var(--border)', 
+              borderRadius: 'var(--radius-md)', 
+              padding: '0.75rem', 
+              background: 'var(--bg-secondary)', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '0.5rem' 
+            }}>
+              {selectedJob !== 'Boshqa' && JOB_TEMPLATES[selectedJob]?.map((req, idx) => (
+                <label key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={requirements.includes(req)}
+                    onChange={() => handleToggleRequirement(req)}
+                    style={{ marginTop: '0.2rem' }}
+                  />
+                  <span>{req}</span>
+                </label>
+              ))}
+
+              {requirements.filter(r => selectedJob === 'Boshqa' || !JOB_TEMPLATES[selectedJob]?.includes(r)).map((req, idx) => (
+                <label key={`custom-${idx}`} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={requirements.includes(req)}
+                    onChange={() => handleToggleRequirement(req)}
+                    style={{ marginTop: '0.2rem' }}
+                  />
+                  <span style={{ color: 'var(--accent)' }}>{req} (Qo'shilgan)</span>
+                </label>
+              ))}
+
+              {requirements.length === 0 && (
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center', padding: '1rem' }}>
+                  Hozircha hech qanday talab tanlanmadi.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input
+              type="text"
+              className="form-input"
+              value={customReq}
+              onChange={(e) => setCustomReq(e.target.value)}
+              placeholder="Yangi talab yoki vazifa qo'shish..."
+              style={{ flex: 1 }}
+            />
+            <Button type="button" variant="outline" onClick={handleAddCustomReq}>
+              + Qo'shish
+            </Button>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-4" style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
+            <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} disabled={creating}>
+              Bekor qilish
+            </Button>
+            <Button type="submit" variant="primary" loading={creating} disabled={creating || (!customJob.trim() && selectedJob === 'Boshqa')}>
+              Havola yaratish
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

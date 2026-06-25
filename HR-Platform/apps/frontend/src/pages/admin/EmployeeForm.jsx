@@ -113,7 +113,17 @@ export function EmployeeForm({ employee = null, onSubmitSuccess, onCancel }) {
         toast.success('Xodim ma\'lumotlari muvaffaqiyatli yangilandi!');
       } else {
         // Create employee and candidate application
-        await employeeService.createEmployee(formData);
+        const createPayload = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone || null,
+          address: formData.address || null,
+          birthDate: formData.birthDate || null,
+          experience: formData.experience,
+          position: formData.position || null,
+          notes: formData.notes || null,
+        };
+        await employeeService.createEmployee(createPayload);
         toast.success('Yangi xodim va uning arizasi muvaffaqiyatli qo\'shildi!');
       }
       
@@ -121,8 +131,17 @@ export function EmployeeForm({ employee = null, onSubmitSuccess, onCancel }) {
         onSubmitSuccess();
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Xatolik yuz berdi';
-      toast.error(errorMsg);
+      if (err.response?.status === 422 && err.response?.data?.errors) {
+        const errors = {};
+        err.response.data.errors.forEach((e) => {
+          errors[e.field] = e.message;
+        });
+        setFormErrors(errors);
+        toast.error('Kiritilgan ma\'lumotlarda xatolik bor, iltimos tekshiring.');
+      } else {
+        const errorMsg = err.response?.data?.message || 'Xatolik yuz berdi';
+        toast.error(errorMsg);
+      }
       console.error(err);
     } finally {
       setSubmitting(false);

@@ -9,7 +9,8 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 /**
  * RegisterPage Component
- * Handles registration using an invitation token with premium styles and validations
+ * Handles registration using an invitation token with premium styles, validations,
+ * and dynamic job requirements checklists.
  */
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ export function RegisterPage() {
   const [token, setToken] = useState('');
   const [isValidating, setIsValidating] = useState(true);
   const [tokenError, setTokenError] = useState(null);
+  const [inviteDetails, setInviteDetails] = useState(null);
+  const [acceptedRequirements, setAcceptedRequirements] = useState(false);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -44,7 +47,9 @@ export function RegisterPage() {
     const validateToken = async () => {
       try {
         const validation = await authService.validateInviteToken(inviteToken);
-        if (!validation.valid) {
+        if (validation.valid) {
+          setInviteDetails(validation.invite);
+        } else {
           setTokenError(validation.message || 'Taklifnoma kodi yaroqsiz yoki muddati tugagan.');
         }
       } catch (err) {
@@ -103,8 +108,8 @@ export function RegisterPage() {
 
     if (!formData.password) {
       errors.password = 'Parol majburiy';
-    } else if (formData.password.length < 6) {
-      errors.password = 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak';
+    } else if (formData.password.length < 8) {
+      errors.password = 'Parol kamida 8 ta belgidan iborat bo\'lishi kerak';
     }
 
     if (formData.password !== formData.confirmPassword) {
@@ -129,6 +134,8 @@ export function RegisterPage() {
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
+        // Set user role to EMPLOYEE if they are registering for a specific job
+        role: inviteDetails?.position ? 'EMPLOYEE' : 'ADMIN',
       });
     } catch (err) {
       console.error('Registration error:', err);
@@ -143,8 +150,10 @@ export function RegisterPage() {
     );
   }
 
+  const isRequirementsCheckNeeded = inviteDetails?.position && inviteDetails?.requirements?.length > 0;
+
   return (
-    <div className="login-page">
+    <div className="login-page" style={{ overflowY: 'auto', padding: '2rem 1rem' }}>
       {/* Theme Toggle */}
       <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10 }}>
         <ThemeToggle />
@@ -160,19 +169,97 @@ export function RegisterPage() {
 
       {/* Right Registration Form */}
       <div className="login-right">
-        <div className="login-form-wrapper">
-          <h2 className="login-form-title">Ro'yxatdan o'tish</h2>
-          <p className="login-form-subtitle">Tizimga a'zo bo'lish uchun ma'lumotlaringizni to'ldiring.</p>
+        <div className="login-form-wrapper" style={{ width: '100%', maxWidth: '480px' }}>
+          <h2 className="login-form-title">
+            {inviteDetails?.position ? `${inviteDetails.position} lavozimiga ariza` : "Ro'yxatdan o'tish"}
+          </h2>
+          <p className="login-form-subtitle">
+            {inviteDetails?.position 
+              ? `Ushbu taklifnoma orqali siz ${inviteDetails.position} lavozimiga ishga kirish formasini to'ldirmoqdasiz.`
+              : "Tizimga a'zo bo'lish uchun ma'lumotlaringizni to'ldiring."}
+          </p>
 
           {/* Token error or Global registration error */}
           {(tokenError || registerError) && (
-            <div className="login-error">
+            <div className="login-error" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: 'var(--radius-md)', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--error)', fontSize: '0.875rem' }}>
               {tokenError || registerError}
             </div>
           )}
 
           {!tokenError && (
             <form onSubmit={handleSubmit} className="login-form">
+              
+              {/* Display invited position and requirements checklist if present */}
+              {inviteDetails && inviteDetails.position && (
+                <div style={{
+                  background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1.25rem',
+                  marginBottom: '1.5rem',
+                  boxShadow: 'var(--shadow-md)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--accent)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    💼 Tanlangan lavozim: <span style={{ color: 'var(--text-primary)' }}>{inviteDetails.position}</span>
+                  </h3>
+                  
+                  {inviteDetails.requirements && inviteDetails.requirements.length > 0 && (
+                    <>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: '600' }}>
+                        Lavozim majburiyatlari va kundalik vazifalar:
+                      </p>
+                      <ul style={{ 
+                        listStyle: 'none', 
+                        margin: 0, 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '0.5rem',
+                        maxHeight: '150px',
+                        overflowY: 'auto',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '0.75rem',
+                        background: 'var(--bg-secondary)'
+                      }}>
+                        {inviteDetails.requirements.map((req, idx) => (
+                          <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-primary)' }}>
+                            <span style={{ color: 'var(--success)', fontWeight: 'bold', fontSize: '0.85rem' }}>✓</span>
+                            <span>{req}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      
+                      <label style={{ 
+                        display: 'flex', 
+                        alignItems: 'flex-start', 
+                        gap: '0.5rem', 
+                        cursor: 'pointer', 
+                        fontSize: '0.75rem', 
+                        fontWeight: '600', 
+                        color: 'var(--text-primary)', 
+                        borderTop: '1px solid var(--border)', 
+                        paddingTop: '0.75rem',
+                        marginTop: '0.25rem',
+                        userSelect: 'none'
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={acceptedRequirements}
+                          onChange={(e) => setAcceptedRequirements(e.target.checked)}
+                          style={{ marginTop: '0.1rem', cursor: 'pointer' }}
+                          required
+                        />
+                        <span>Lavozim talablari va kundalik vazifalar bilan tanishdim va roziman</span>
+                      </label>
+                    </>
+                  )}
+                </div>
+              )}
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <Input
                   label="Ism"
@@ -213,7 +300,7 @@ export function RegisterPage() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Kamida 6 belgi"
+                placeholder="Kamida 8 belgi"
                 error={formErrors.password}
                 required
               />
@@ -233,7 +320,7 @@ export function RegisterPage() {
                 type="submit"
                 fullWidth
                 loading={isRegistering}
-                disabled={isRegistering}
+                disabled={isRegistering || (isRequirementsCheckNeeded && !acceptedRequirements)}
                 style={{ marginTop: '0.5rem' }}
               >
                 Ro'yxatdan o'tish
