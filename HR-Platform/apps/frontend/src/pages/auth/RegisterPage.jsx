@@ -281,6 +281,157 @@ export function RegisterPage() {
   const isCandidateInvite = !!inviteDetails?.position;
   const isRequirementsCheckNeeded = inviteDetails?.position && inviteDetails?.requirements?.length > 0;
 
+  // Standalone Full-Screen Candidate Portal View
+  if (isCandidateInvite && !tokenError) {
+    return (
+      <div className="candidate-portal-wrapper">
+        <div style={{ position: 'fixed', top: '1.5rem', right: '1.5rem', zIndex: 10 }}>
+          <ThemeToggle />
+        </div>
+
+        <div className="candidate-portal-container animate-fade-in-up">
+          <div className="candidate-header">
+            <div className="candidate-badge">💼 HR PLATFORM RECRUITING</div>
+            <h1 className="candidate-title">{inviteDetails.position} lavozimiga ariza</h1>
+            <p className="candidate-subtitle">
+              Ushbu taklifnoma orqali siz <strong>{inviteDetails.position}</strong> lavozimiga ishga kirish formasini to'ldirmoqdasiz.
+            </p>
+          </div>
+
+          {candidateError && (
+            <div className="login-error" style={{ marginBottom: '1.25rem', padding: '0.875rem', borderRadius: 'var(--radius-md)', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--error)', fontSize: '0.875rem' }}>
+              {candidateError}
+            </div>
+          )}
+
+          <form onSubmit={handleCandidateSubmit} className="candidate-form">
+            {inviteDetails.requirements && inviteDetails.requirements.length > 0 && (
+              <div className="candidate-req-box">
+                <div className="candidate-req-title">
+                  <span>✨ Lavozim talablari va vazifalari</span>
+                </div>
+                <ul className="candidate-req-list">
+                  {inviteDetails.requirements.map((req, idx) => (
+                    <li key={idx} className="candidate-req-item">
+                      <span className="candidate-req-check">✓</span>
+                      <span>{req}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <label className="candidate-req-agree">
+                  <input
+                    type="checkbox"
+                    checked={acceptedRequirements}
+                    onChange={(e) => setAcceptedRequirements(e.target.checked)}
+                    required
+                  />
+                  <span>Lavozim talablari va vazifalar bilan tanishdim va roziman</span>
+                </label>
+              </div>
+            )}
+
+            <div className="candidate-form-grid">
+              <Input
+                label="Ism *"
+                type="text"
+                name="firstName"
+                value={candidateData.firstName}
+                onChange={handleCandidateChange}
+                placeholder="Ali"
+                error={formErrors.firstName}
+                required
+              />
+              <Input
+                label="Familiya *"
+                type="text"
+                name="lastName"
+                value={candidateData.lastName}
+                onChange={handleCandidateChange}
+                placeholder="Valiyev"
+                error={formErrors.lastName}
+                required
+              />
+            </div>
+
+            <div className="candidate-form-grid">
+              <Input
+                label="Telefon raqami *"
+                type="text"
+                name="phone"
+                value={candidateData.phone}
+                onChange={handleCandidateChange}
+                placeholder="+998901234567"
+                error={formErrors.phone}
+                required
+              />
+              <Input
+                label="Tug'ilgan sana *"
+                type="date"
+                name="birthDate"
+                value={candidateData.birthDate}
+                onChange={handleCandidateChange}
+                error={formErrors.birthDate}
+                required
+              />
+            </div>
+
+            <div className="candidate-form-grid">
+              <Input
+                label="Lavozimi *"
+                type="text"
+                name="position"
+                value={inviteDetails?.position || ''}
+                disabled
+                required
+              />
+              <Input
+                label="Ish tajribasi (yil) *"
+                type="number"
+                name="experience"
+                value={candidateData.experience}
+                onChange={handleCandidateChange}
+                min="0"
+                max="50"
+                error={formErrors.experience}
+                required
+              />
+            </div>
+
+            <Input
+              label="Manzil"
+              type="text"
+              name="address"
+              value={candidateData.address}
+              onChange={handleCandidateChange}
+              placeholder="Toshkent shahar, Chilonzor tumani"
+              error={formErrors.address}
+            />
+
+            <Textarea
+              label="Qo'shimcha izohlar"
+              name="notes"
+              value={candidateData.notes}
+              onChange={handleCandidateChange}
+              placeholder="O'zingiz va tajribangiz haqida qo'shimcha ma'lumotlar..."
+              rows={3}
+            />
+
+            <Button
+              type="submit"
+              fullWidth
+              loading={isSubmittingCandidate}
+              disabled={isSubmittingCandidate || (isRequirementsCheckNeeded && !acceptedRequirements)}
+              style={{ marginTop: '0.5rem' }}
+            >
+              Tasdiqlash va Ariza Topshirish
+            </Button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="login-page" style={{ overflowY: 'auto', padding: '2rem 1rem' }}>
       {/* Theme Toggle */}
@@ -299,195 +450,19 @@ export function RegisterPage() {
       {/* Right Registration Form */}
       <div className="login-right">
         <div className="login-form-wrapper" style={{ width: '100%', maxWidth: '480px' }}>
-          <h2 className="login-form-title">
-            {inviteDetails?.position ? `${inviteDetails.position} lavozimiga ariza` : "Ro'yxatdan o'tish"}
-          </h2>
-          <p className="login-form-subtitle">
-            {inviteDetails?.position 
-              ? `Ushbu taklifnoma orqali siz ${inviteDetails.position} lavozimiga ishga kirish formasini to'ldirmoqdasiz.`
-              : "Tizimga a'zo bo'lish uchun ma'lumotlaringizni to'ldiring."}
-          </p>
+          <h2 className="login-form-title">Ro'yxatdan o'tish</h2>
+          <p className="login-form-subtitle">Tizimga a'zo bo'lish uchun ma'lumotlaringizni to'ldiring.</p>
 
           {/* Token error or Global registration error */}
-          {(tokenError || registerError || candidateError) && (
+          {(tokenError || registerError) && (
             <div className="login-error" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: 'var(--radius-md)', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--error)', fontSize: '0.875rem' }}>
-              {tokenError || registerError || candidateError}
+              {tokenError || registerError}
             </div>
           )}
 
           {!tokenError && (
-            isCandidateInvite ? (
-              // Candidate Job Application Form
-              <form onSubmit={handleCandidateSubmit} className="login-form" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {/* Invited position details display card */}
-                {inviteDetails && (
-                  <div style={{
-                    background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius-lg)',
-                    padding: '1.25rem',
-                    boxShadow: 'var(--shadow-md)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.75rem',
-                    backdropFilter: 'blur(10px)'
-                  }}>
-                    <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--accent)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      💼 Tanlangan lavozim: <span style={{ color: 'var(--text-primary)' }}>{inviteDetails.position}</span>
-                    </h3>
-                    
-                    {inviteDetails.requirements && inviteDetails.requirements.length > 0 && (
-                      <>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: '600' }}>
-                          Lavozim talablari va vazifalari:
-                        </p>
-                        <ul style={{ 
-                          listStyle: 'none', 
-                          margin: 0, 
-                          display: 'flex', 
-                          flexDirection: 'column', 
-                          gap: '0.5rem',
-                          maxHeight: '150px',
-                          overflowY: 'auto',
-                          border: '1px solid var(--border)',
-                          borderRadius: 'var(--radius-md)',
-                          padding: '0.75rem',
-                          background: 'var(--bg-secondary)'
-                        }}>
-                          {inviteDetails.requirements.map((req, idx) => (
-                            <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-primary)' }}>
-                              <span style={{ color: 'var(--status-shartnoma, #10b981)', fontWeight: 'bold', fontSize: '0.85rem' }}>✓</span>
-                              <span>{req}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        
-                        <label style={{ 
-                          display: 'flex', 
-                          alignItems: 'flex-start', 
-                          gap: '0.5rem', 
-                          cursor: 'pointer', 
-                          fontSize: '0.75rem', 
-                          fontWeight: '600', 
-                          color: 'var(--text-primary)', 
-                          borderTop: '1px solid var(--border)', 
-                          paddingTop: '0.75rem',
-                          marginTop: '0.25rem',
-                          userSelect: 'none'
-                        }}>
-                          <input
-                            type="checkbox"
-                            checked={acceptedRequirements}
-                            onChange={(e) => setAcceptedRequirements(e.target.checked)}
-                            style={{ marginTop: '0.1rem', cursor: 'pointer' }}
-                            required
-                          />
-                          <span>Lavozim talablari va vazifalar bilan tanishdim va roziman</span>
-                        </label>
-                      </>
-                    )}
-                  </div>
-                )}
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <Input
-                    label="Ism"
-                    type="text"
-                    name="firstName"
-                    value={candidateData.firstName}
-                    onChange={handleCandidateChange}
-                    placeholder="Ali"
-                    error={formErrors.firstName}
-                    required
-                  />
-                  <Input
-                    label="Familiya"
-                    type="text"
-                    name="lastName"
-                    value={candidateData.lastName}
-                    onChange={handleCandidateChange}
-                    placeholder="Valiyev"
-                    error={formErrors.lastName}
-                    required
-                  />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <Input
-                    label="Telefon raqami"
-                    type="text"
-                    name="phone"
-                    value={candidateData.phone}
-                    onChange={handleCandidateChange}
-                    placeholder="+998901234567"
-                    error={formErrors.phone}
-                    required
-                  />
-                  <Input
-                    label="Tug'ilgan sana"
-                    type="date"
-                    name="birthDate"
-                    value={candidateData.birthDate}
-                    onChange={handleCandidateChange}
-                    error={formErrors.birthDate}
-                    required
-                  />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <Input
-                    label="Lavozimi"
-                    type="text"
-                    name="position"
-                    value={inviteDetails?.position || ''}
-                    disabled
-                    required
-                  />
-                  <Input
-                    label="Ish tajribasi (yil)"
-                    type="number"
-                    name="experience"
-                    value={candidateData.experience}
-                    onChange={handleCandidateChange}
-                    min="0"
-                    max="50"
-                    error={formErrors.experience}
-                    required
-                  />
-                </div>
-
-                <Input
-                  label="Manzil"
-                  type="text"
-                  name="address"
-                  value={candidateData.address}
-                  onChange={handleCandidateChange}
-                  placeholder="Toshkent shahar, Chilonzor tumani"
-                  error={formErrors.address}
-                />
-
-                <Textarea
-                  label="Qo'shimcha izohlar"
-                  name="notes"
-                  value={candidateData.notes}
-                  onChange={handleCandidateChange}
-                  placeholder="O'zingiz va tajribangiz haqida qo'shimcha ma'lumotlar..."
-                  rows={3}
-                />
-
-                <Button
-                  type="submit"
-                  fullWidth
-                  loading={isSubmittingCandidate}
-                  disabled={isSubmittingCandidate || (isRequirementsCheckNeeded && !acceptedRequirements)}
-                  style={{ marginTop: '0.5rem' }}
-                >
-                  Tasdiqlash va Ariza Topshirish
-                </Button>
-              </form>
-            ) : (
-              // Standard Admin/HR Registration Form
-              <form onSubmit={handleSubmit} className="login-form">
+            // Standard Admin/HR Registration Form
+            <form onSubmit={handleSubmit} className="login-form">
                 
                 {/* Display invited position and requirements checklist if present */}
                 {inviteDetails && inviteDetails.position && (
@@ -626,7 +601,6 @@ export function RegisterPage() {
                   Ro'yxatdan o'tish
                 </Button>
               </form>
-            )
           )}
 
           {tokenError && (
