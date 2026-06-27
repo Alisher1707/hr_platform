@@ -30,7 +30,7 @@ export async function createInvite(createdBy, position = null, requirements = nu
   const invite = result.rows[0];
 
   // Generate invite URL
-  const inviteUrl = `${config.frontendUrl}/register?token=${token}`;
+  const inviteUrl = `${config.frontendUrl}/apply?token=${token}`;
 
   return {
     ...invite,
@@ -98,7 +98,7 @@ export async function getAllInvites(filters = {}) {
     created_at: row.created_at,
     position: row.position,
     requirements: row.requirements,
-    invite_url: `${config.frontendUrl}/register?token=${row.token}`,
+    invite_url: `${config.frontendUrl}/apply?token=${row.token}`,
     is_expired: new Date(row.expires_at) < new Date(),
     is_used: !!row.used_at,
     created_by: row.created_by ? {
@@ -160,7 +160,7 @@ export async function getInviteById(id) {
     created_at: row.created_at,
     position: row.position,
     requirements: row.requirements,
-    invite_url: `${config.frontendUrl}/register?token=${row.token}`,
+    invite_url: `${config.frontendUrl}/apply?token=${row.token}`,
     is_expired: new Date(row.expires_at) < new Date(),
     is_used: !!row.used_at,
     created_by: row.created_by ? {
@@ -196,8 +196,8 @@ export async function validateInviteToken(token) {
 
   const invite = result.rows[0];
 
-  // Check if already used
-  if (invite.used_at) {
+  // Check if already used (only for registration invites without position)
+  if (invite.used_at && !invite.position) {
     return {
       valid: false,
       message: MESSAGES.INVITE_USED,
@@ -231,6 +231,123 @@ export async function validateInviteToken(token) {
       requirements: invite.requirements,
     },
   };
+}
+
+/**
+ * Submit application using invite token
+ */
+export async function submitApplication(applicationData) {
+  const client = await getClient();
+  try {
+    await client.query('BEGIN');
+
+    // 1. Validate invite token
+    const inviteResult = await client.query(
+      `SELECT id, expires_at, used_at, is_active, position, requirements, created_by
+       FROM invites
+       WHERE token = $1`,
+      [applicationData.token]
+    );
+
+    if (inviteResult.rows.length === 0) {
+      const error = new Error(MESSAGES.INVITE_INVALID);
+      error.statusCode = HTTP_STATUS.BAD_REQUEST;
+      throw error;
+    }
+
+    const invite = inviteResult.rows[0];
+
+    // Check if already used (only for registration invites without position)
+    if (invite.used_at && !invite.position) {
+      const error = new Error(MESSAGES.INVITE_USED);
+      error.statusCode = HTTP_STATUS.BAD_REQUEST;
+      throw error;
+    }
+
+    // Check if expired
+    if (new Date(invite.expires_at) < new Date()) {
+      const error = new Error(MESSAGES.INVITE_EXPIRED);
+      error.statusCode = HTTP_STATUS.BAD_REQUEST;
+      throw error;
+    }
+
+    // Check if not active
+    if (!invite.is_active) {
+      const error = new Error(MESSAGES.INVITE_INVALID);
+      error.statusCode = HTTP_STATUS.BAD_REQUEST;
+      throw error;
+    }
+
+    // 2. Insert employee
+    const employeeResult = await client.query(
+      `INSERT INTO employees (first_name, last_name, phone, address, birth_date, experience, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id`,
+      [
+        applicationData.firstName,
+        applicationData.lastName,
+        applicationData.phone,
+        applicationData.address || null,
+        applicationData.birthDate,
+        applicationData.experience,
+        invite.created_by
+      ]
+    );
+    const employeeId = employeeResult.rows[0].id;
+
+    // 3. Create application record
+    const applicationResult = await client.query(
+      `INSERT INTO applications (employee_id, status, position, notes, order_index)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id`,
+      [
+        employeeId,
+        'KELDI',
+        invite.position || 'Kiritilmagan',
+        applicationData.notes || null,
+        0
+      ]
+    );
+    const applicationId = applicationResult.rows[0].id;
+
+    // 4. Create history record
+    await client.query(
+      `INSERT INTO application_history (application_id, changed_by, new_status, comment)
+       VALUES ($1, $2, $3, $4)`,
+      [
+        applicationId,
+        invite.created_by,
+        'KELDI',
+        `Nomzod taklifnoma orqali ariza topshirdi. Lavozim: ${invite.position || 'Kiritilmagan'}`
+      ]
+    );
+
+    // 5. Mark invite as used (only deactivate if it has no position)
+    if (!invite.position) {
+      await client.query(
+        'UPDATE invites SET used_at = NOW(), is_active = false WHERE id = $1',
+        [invite.id]
+      );
+    } else {
+      await client.query(
+        'UPDATE invites SET used_at = NOW() WHERE id = $1',
+        [invite.id]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    return {
+      success: true,
+      employeeId,
+      applicationId
+    };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 /**

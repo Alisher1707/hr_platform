@@ -45,6 +45,16 @@ export const getInviteById = asyncHandler(async (req, res) => {
 });
 
 /**
+ * POST /api/v1/invites/apply
+ * Submit candidate application using invite token
+ */
+export const submitApplication = asyncHandler(async (req, res) => {
+  const result = await inviteService.submitApplication(req.body);
+
+  return successResponse(res, result, 'Muvaffaqiyatli ariza topshirdingiz. Rahmat!', 201);
+});
+
+/**
  * GET /api/v1/invites/validate/:token
  * Validate invite token
  */

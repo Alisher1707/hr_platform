@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import authService from '../../services/authService';
+import inviteService from '../../services/inviteService';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import Textarea from '../../components/ui/Textarea';
 import ThemeToggle from '../../components/ui/ThemeToggle';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
@@ -62,12 +64,13 @@ export function RegisterPage() {
     validateToken();
   }, [searchParams]);
 
-  // 2. Redirect if already authenticated
+  // 2. Redirect if already authenticated ONLY if no token is in searchParams
   useEffect(() => {
-    if (isAuthenticated) {
+    const token = searchParams.get('token');
+    if (isAuthenticated && !token) {
       navigate('/');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, searchParams]);
 
   // 3. Clear errors on unmount
   useEffect(() => {
@@ -142,6 +145,92 @@ export function RegisterPage() {
     }
   };
 
+  const [candidateData, setCandidateData] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    birthDate: '',
+    experience: '0',
+    address: '',
+    notes: '',
+  });
+
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmittingCandidate, setIsSubmittingCandidate] = useState(false);
+  const [candidateError, setCandidateError] = useState(null);
+
+  const handleCandidateChange = (e) => {
+    const { name, value } = e.target;
+    setCandidateData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    // Clear field error
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
+  };
+
+  const validateCandidateForm = () => {
+    const errors = {};
+
+    if (!candidateData.firstName.trim()) {
+      errors.firstName = 'Ism majburiy';
+    }
+
+    if (!candidateData.lastName.trim()) {
+      errors.lastName = 'Familiya majburiy';
+    }
+
+    if (!candidateData.phone.trim()) {
+      errors.phone = 'Telefon raqami majburiy';
+    }
+
+    if (!candidateData.birthDate) {
+      errors.birthDate = 'Tug\'ilgan sana majburiy';
+    }
+
+    if (candidateData.experience === '' || isNaN(candidateData.experience) || parseInt(candidateData.experience) < 0) {
+      errors.experience = 'Tajriba yillari yaroqsiz';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleCandidateSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateCandidateForm()) {
+      return;
+    }
+
+    setIsSubmittingCandidate(true);
+    setCandidateError(null);
+
+    try {
+      await inviteService.submitApplication({
+        token,
+        firstName: candidateData.firstName,
+        lastName: candidateData.lastName,
+        phone: candidateData.phone,
+        birthDate: candidateData.birthDate,
+        experience: parseInt(candidateData.experience),
+        address: candidateData.address,
+        notes: candidateData.notes,
+      });
+      setIsSubmitted(true);
+    } catch (err) {
+      setCandidateError(err.response?.data?.message || 'Ariza topshirishda xatolik yuz berdi.');
+      console.error(err);
+    } finally {
+      setIsSubmittingCandidate(false);
+    }
+  };
+
   if (isValidating) {
     return (
       <div className="login-page">
@@ -150,6 +239,46 @@ export function RegisterPage() {
     );
   }
 
+  if (isSubmitted) {
+    return (
+      <div className="login-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '2rem 1rem' }}>
+        <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10 }}>
+          <ThemeToggle />
+        </div>
+        <div style={{
+          width: '100%',
+          maxWidth: '500px',
+          padding: '2.5rem',
+          textAlign: 'center',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-xl)',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1.5rem'
+        }}>
+          <div style={{ fontSize: '4rem' }}>🎉</div>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--status-shartnoma, #10b981)', margin: 0 }}>
+            Arizangiz qabul qilindi!
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6', margin: 0 }}>
+            Hurmatli <strong>{candidateData.firstName} {candidateData.lastName}</strong>, 
+            sizning <strong>{inviteDetails?.position}</strong> lavozimiga topshirgan arizangiz muvaffaqiyatli qabul qilindi va tizimga saqlandi. 
+            HR xodimlarimiz uni tez orada ko'rib chiqishadi va siz bilan bog'lanishadi.
+          </p>
+          <div style={{ borderTop: '1px solid var(--border)', width: '100%', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+              HR Platform Recruiting Tizimi
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isCandidateInvite = !!inviteDetails?.position;
   const isRequirementsCheckNeeded = inviteDetails?.position && inviteDetails?.requirements?.length > 0;
 
   return (
@@ -180,152 +309,324 @@ export function RegisterPage() {
           </p>
 
           {/* Token error or Global registration error */}
-          {(tokenError || registerError) && (
+          {(tokenError || registerError || candidateError) && (
             <div className="login-error" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: 'var(--radius-md)', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--error)', fontSize: '0.875rem' }}>
-              {tokenError || registerError}
+              {tokenError || registerError || candidateError}
             </div>
           )}
 
           {!tokenError && (
-            <form onSubmit={handleSubmit} className="login-form">
-              
-              {/* Display invited position and requirements checklist if present */}
-              {inviteDetails && inviteDetails.position && (
-                <div style={{
-                  background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '1.25rem',
-                  marginBottom: '1.5rem',
-                  boxShadow: 'var(--shadow-md)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.75rem',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--accent)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    💼 Tanlangan lavozim: <span style={{ color: 'var(--text-primary)' }}>{inviteDetails.position}</span>
-                  </h3>
-                  
-                  {inviteDetails.requirements && inviteDetails.requirements.length > 0 && (
-                    <>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: '600' }}>
-                        Lavozim majburiyatlari va kundalik vazifalar:
-                      </p>
-                      <ul style={{ 
-                        listStyle: 'none', 
-                        margin: 0, 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        gap: '0.5rem',
-                        maxHeight: '150px',
-                        overflowY: 'auto',
-                        border: '1px solid var(--border)',
-                        borderRadius: 'var(--radius-md)',
-                        padding: '0.75rem',
-                        background: 'var(--bg-secondary)'
-                      }}>
-                        {inviteDetails.requirements.map((req, idx) => (
-                          <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-primary)' }}>
-                            <span style={{ color: 'var(--success)', fontWeight: 'bold', fontSize: '0.85rem' }}>✓</span>
-                            <span>{req}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      
-                      <label style={{ 
-                        display: 'flex', 
-                        alignItems: 'flex-start', 
-                        gap: '0.5rem', 
-                        cursor: 'pointer', 
-                        fontSize: '0.75rem', 
-                        fontWeight: '600', 
-                        color: 'var(--text-primary)', 
-                        borderTop: '1px solid var(--border)', 
-                        paddingTop: '0.75rem',
-                        marginTop: '0.25rem',
-                        userSelect: 'none'
-                      }}>
-                        <input
-                          type="checkbox"
-                          checked={acceptedRequirements}
-                          onChange={(e) => setAcceptedRequirements(e.target.checked)}
-                          style={{ marginTop: '0.1rem', cursor: 'pointer' }}
-                          required
-                        />
-                        <span>Lavozim talablari va kundalik vazifalar bilan tanishdim va roziman</span>
-                      </label>
-                    </>
-                  )}
+            isCandidateInvite ? (
+              // Candidate Job Application Form
+              <form onSubmit={handleCandidateSubmit} className="login-form" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {/* Invited position details display card */}
+                {inviteDetails && (
+                  <div style={{
+                    background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-lg)',
+                    padding: '1.25rem',
+                    boxShadow: 'var(--shadow-md)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                    backdropFilter: 'blur(10px)'
+                  }}>
+                    <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--accent)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      💼 Tanlangan lavozim: <span style={{ color: 'var(--text-primary)' }}>{inviteDetails.position}</span>
+                    </h3>
+                    
+                    {inviteDetails.requirements && inviteDetails.requirements.length > 0 && (
+                      <>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: '600' }}>
+                          Lavozim talablari va vazifalari:
+                        </p>
+                        <ul style={{ 
+                          listStyle: 'none', 
+                          margin: 0, 
+                          display: 'flex', 
+                          flexDirection: 'column', 
+                          gap: '0.5rem',
+                          maxHeight: '150px',
+                          overflowY: 'auto',
+                          border: '1px solid var(--border)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: '0.75rem',
+                          background: 'var(--bg-secondary)'
+                        }}>
+                          {inviteDetails.requirements.map((req, idx) => (
+                            <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-primary)' }}>
+                              <span style={{ color: 'var(--status-shartnoma, #10b981)', fontWeight: 'bold', fontSize: '0.85rem' }}>✓</span>
+                              <span>{req}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        
+                        <label style={{ 
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          gap: '0.5rem', 
+                          cursor: 'pointer', 
+                          fontSize: '0.75rem', 
+                          fontWeight: '600', 
+                          color: 'var(--text-primary)', 
+                          borderTop: '1px solid var(--border)', 
+                          paddingTop: '0.75rem',
+                          marginTop: '0.25rem',
+                          userSelect: 'none'
+                        }}>
+                          <input
+                            type="checkbox"
+                            checked={acceptedRequirements}
+                            onChange={(e) => setAcceptedRequirements(e.target.checked)}
+                            style={{ marginTop: '0.1rem', cursor: 'pointer' }}
+                            required
+                          />
+                          <span>Lavozim talablari va vazifalar bilan tanishdim va roziman</span>
+                        </label>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <Input
+                    label="Ism"
+                    type="text"
+                    name="firstName"
+                    value={candidateData.firstName}
+                    onChange={handleCandidateChange}
+                    placeholder="Ali"
+                    error={formErrors.firstName}
+                    required
+                  />
+                  <Input
+                    label="Familiya"
+                    type="text"
+                    name="lastName"
+                    value={candidateData.lastName}
+                    onChange={handleCandidateChange}
+                    placeholder="Valiyev"
+                    error={formErrors.lastName}
+                    required
+                  />
                 </div>
-              )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <Input
+                    label="Telefon raqami"
+                    type="text"
+                    name="phone"
+                    value={candidateData.phone}
+                    onChange={handleCandidateChange}
+                    placeholder="+998901234567"
+                    error={formErrors.phone}
+                    required
+                  />
+                  <Input
+                    label="Tug'ilgan sana"
+                    type="date"
+                    name="birthDate"
+                    value={candidateData.birthDate}
+                    onChange={handleCandidateChange}
+                    error={formErrors.birthDate}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <Input
+                    label="Lavozimi"
+                    type="text"
+                    name="position"
+                    value={inviteDetails?.position || ''}
+                    disabled
+                    required
+                  />
+                  <Input
+                    label="Ish tajribasi (yil)"
+                    type="number"
+                    name="experience"
+                    value={candidateData.experience}
+                    onChange={handleCandidateChange}
+                    min="0"
+                    max="50"
+                    error={formErrors.experience}
+                    required
+                  />
+                </div>
+
                 <Input
-                  label="Ism"
+                  label="Manzil"
                   type="text"
-                  name="firstName"
-                  value={formData.firstName}
+                  name="address"
+                  value={candidateData.address}
+                  onChange={handleCandidateChange}
+                  placeholder="Toshkent shahar, Chilonzor tumani"
+                  error={formErrors.address}
+                />
+
+                <Textarea
+                  label="Qo'shimcha izohlar"
+                  name="notes"
+                  value={candidateData.notes}
+                  onChange={handleCandidateChange}
+                  placeholder="O'zingiz va tajribangiz haqida qo'shimcha ma'lumotlar..."
+                  rows={3}
+                />
+
+                <Button
+                  type="submit"
+                  fullWidth
+                  loading={isSubmittingCandidate}
+                  disabled={isSubmittingCandidate || (isRequirementsCheckNeeded && !acceptedRequirements)}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  Tasdiqlash va Ariza Topshirish
+                </Button>
+              </form>
+            ) : (
+              // Standard Admin/HR Registration Form
+              <form onSubmit={handleSubmit} className="login-form">
+                
+                {/* Display invited position and requirements checklist if present */}
+                {inviteDetails && inviteDetails.position && (
+                  <div style={{
+                    background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-lg)',
+                    padding: '1.25rem',
+                    marginBottom: '1.5rem',
+                    boxShadow: 'var(--shadow-md)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                    backdropFilter: 'blur(10px)'
+                  }}>
+                    <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--accent)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      💼 Tanlangan lavozim: <span style={{ color: 'var(--text-primary)' }}>{inviteDetails.position}</span>
+                    </h3>
+                    
+                    {inviteDetails.requirements && inviteDetails.requirements.length > 0 && (
+                      <>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: '600' }}>
+                          Lavozim majburiyatlari va kundalik vazifalar:
+                        </p>
+                        <ul style={{ 
+                          listStyle: 'none', 
+                          margin: 0, 
+                          display: 'flex', 
+                          flexDirection: 'column', 
+                          gap: '0.5rem',
+                          maxHeight: '150px',
+                          overflowY: 'auto',
+                          border: '1px solid var(--border)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: '0.75rem',
+                          background: 'var(--bg-secondary)'
+                        }}>
+                          {inviteDetails.requirements.map((req, idx) => (
+                            <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-primary)' }}>
+                              <span style={{ color: 'var(--success)', fontWeight: 'bold', fontSize: '0.85rem' }}>✓</span>
+                              <span>{req}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        
+                        <label style={{ 
+                          display: 'flex', 
+                          alignItems: 'flex-start', 
+                          gap: '0.5rem', 
+                          cursor: 'pointer', 
+                          fontSize: '0.75rem', 
+                          fontWeight: '600', 
+                          color: 'var(--text-primary)', 
+                          borderTop: '1px solid var(--border)', 
+                          paddingTop: '0.75rem',
+                          marginTop: '0.25rem',
+                          userSelect: 'none'
+                        }}>
+                          <input
+                            type="checkbox"
+                            checked={acceptedRequirements}
+                            onChange={(e) => setAcceptedRequirements(e.target.checked)}
+                            style={{ marginTop: '0.1rem', cursor: 'pointer' }}
+                            required
+                          />
+                          <span>Lavozim talablari va kundalik vazifalar bilan tanishdim va roziman</span>
+                        </label>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <Input
+                    label="Ism"
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    placeholder="Ali"
+                    error={formErrors.firstName}
+                    required
+                  />
+                  <Input
+                    label="Familiya"
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    placeholder="Valiyev"
+                    error={formErrors.lastName}
+                    required
+                  />
+                </div>
+
+                <Input
+                  label="Email manzili"
+                  type="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleChange}
-                  placeholder="Ali"
-                  error={formErrors.firstName}
+                  placeholder="ali.valiyev@company.com"
+                  error={formErrors.email}
                   required
                 />
+
                 <Input
-                  label="Familiya"
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
+                  label="Parol"
+                  type="password"
+                  name="password"
+                  value={formData.password}
                   onChange={handleChange}
-                  placeholder="Valiyev"
-                  error={formErrors.lastName}
+                  placeholder="Kamida 8 belgi"
+                  error={formErrors.password}
                   required
                 />
-              </div>
 
-              <Input
-                label="Email manzili"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="ali.valiyev@company.com"
-                error={formErrors.email}
-                required
-              />
+                <Input
+                  label="Parolni tasdiqlash"
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="••••••"
+                  error={formErrors.confirmPassword}
+                  required
+                />
 
-              <Input
-                label="Parol"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Kamida 8 belgi"
-                error={formErrors.password}
-                required
-              />
-
-              <Input
-                label="Parolni tasdiqlash"
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="••••••"
-                error={formErrors.confirmPassword}
-                required
-              />
-
-              <Button
-                type="submit"
-                fullWidth
-                loading={isRegistering}
-                disabled={isRegistering || (isRequirementsCheckNeeded && !acceptedRequirements)}
-                style={{ marginTop: '0.5rem' }}
-              >
-                Ro'yxatdan o'tish
-              </Button>
-            </form>
+                <Button
+                  type="submit"
+                  fullWidth
+                  loading={isRegistering}
+                  disabled={isRegistering || (isRequirementsCheckNeeded && !acceptedRequirements)}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  Ro'yxatdan o'tish
+                </Button>
+              </form>
+            )
           )}
 
           {tokenError && (

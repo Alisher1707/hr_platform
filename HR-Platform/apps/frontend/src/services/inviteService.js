@@ -44,6 +44,14 @@ export const inviteService = {
     const response = await api.delete(`/invites/${id}`);
     return response.data.data;
   },
+
+  /**
+   * Submit application using invite token
+   */
+  async submitApplication(data) {
+    const response = await api.post('/invites/apply', data);
+    return response.data.data;
+  },
 };
 
 export default inviteService;

@@ -219,15 +219,20 @@ export function InviteManagement() {
                 {invites.map((inv) => {
                   const isExpired = new Date(inv.expires_at) < new Date();
                   const isUsed = !!inv.used_at;
+                  const isJobInvite = !!inv.position;
                   
                   let statusBadge = <Badge variant="success">Faol</Badge>;
-                  if (isUsed) {
-                    statusBadge = <Badge variant="info">Ishlatilgan</Badge>;
-                  } else if (isExpired) {
+                  if (isExpired) {
                     statusBadge = <Badge variant="error">Muddati o'tgan</Badge>;
                   } else if (!inv.is_active) {
                     statusBadge = <Badge variant="warning">Nofaol</Badge>;
+                  } else if (isUsed && !isJobInvite) {
+                    statusBadge = <Badge variant="info">Ishlatilgan</Badge>;
+                  } else if (isUsed && isJobInvite) {
+                    statusBadge = <Badge variant="success">Faol (Arizalar tushgan)</Badge>;
                   }
+
+                  const canCopy = inv.is_active && !isExpired && (!isUsed || isJobInvite);
 
                   return (
                     <tr key={inv.id}>
@@ -246,12 +251,12 @@ export function InviteManagement() {
                       <td>
                         {inv.used_by 
                           ? `${inv.used_by.first_name} ${inv.used_by.last_name} (${inv.used_by.email})` 
-                          : '—'}
+                          : (isJobInvite && isUsed ? 'Nomzodlar topshirgan' : '—')}
                       </td>
                       <td>{statusBadge}</td>
                       <td>
                         <div className="table-actions" style={{ justifyContent: 'flex-end' }}>
-                          {!isUsed && !isExpired && inv.is_active && (
+                          {canCopy && (
                             <>
                               <Button 
                                 variant="outline" 

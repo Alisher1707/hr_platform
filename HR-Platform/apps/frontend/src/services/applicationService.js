@@ -34,6 +34,7 @@ export const applicationService = {
       createdAt: app.created_at,
       experience: app.employee?.experience || 0,
       address: app.employee?.address || '',
+      age: app.employee?.age || null,
       assignedTo: app.assigned_to?.id || app.assigned_to || '',
     }));
   },

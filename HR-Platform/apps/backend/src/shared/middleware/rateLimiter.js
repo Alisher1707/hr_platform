@@ -16,6 +16,7 @@ export const generalLimiter = rateLimit({
     success: false,
     message: 'Too many requests from this IP, please try again later.',
   },
+  skip: () => process.env.NODE_ENV === 'development',
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -30,6 +31,7 @@ export const authLimiter = rateLimit({
     success: false,
     message: 'Too many authentication attempts, please try again later.',
   },
+  skip: () => process.env.NODE_ENV === 'development',
   skipSuccessfulRequests: true, // Don't count successful requests
   standardHeaders: true,
   legacyHeaders: false,
@@ -45,6 +47,7 @@ export const inviteLimiter = rateLimit({
     success: false,
     message: 'Too many invite creation attempts, please try again later.',
   },
+  skip: () => process.env.NODE_ENV === 'development',
   standardHeaders: true,
   legacyHeaders: false,
 });

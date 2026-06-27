@@ -36,7 +36,9 @@ export async function loginUser(email, password) {
   }
 
   // Verify password
+  console.log('Login attempt:', { email, password, hash: user.password_hash });
   const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+  console.log('Password valid:', isPasswordValid);
 
   if (!isPasswordValid) {
     const error = new Error(MESSAGES.AUTH_FAILED);

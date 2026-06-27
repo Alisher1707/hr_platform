@@ -30,9 +30,27 @@ const inviteQuerySchema = Joi.object({
   createdBy: commonSchemas.uuid.optional(),
 });
 
+const applyInviteSchema = Joi.object({
+  token: Joi.string().length(64).required(),
+  firstName: Joi.string().min(2).max(100).required(),
+  lastName: Joi.string().min(2).max(100).required(),
+  phone: Joi.string().max(20).required(),
+  birthDate: Joi.date().required(),
+  experience: Joi.number().integer().min(0).max(50).required(),
+  address: Joi.string().max(500).allow('', null).optional(),
+  notes: Joi.string().max(1000).allow('', null).optional(),
+});
+
 /**
  * Routes
  */
+
+// POST /api/v1/invites/apply - Candidate application (public)
+router.post(
+  '/apply',
+  validate(applyInviteSchema),
+  inviteController.submitApplication
+);
 
 // POST /api/v1/invites - Create new invite (SUPER_ADMIN only)
 router.post(

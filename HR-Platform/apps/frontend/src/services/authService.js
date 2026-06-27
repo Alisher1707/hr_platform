@@ -5,6 +5,15 @@ import api from './api';
  * Handles all auth-related API calls
  */
 
+const mapUser = (user) => {
+  if (!user) return user;
+  return {
+    ...user,
+    firstName: user.firstName || user.first_name || '',
+    lastName: user.lastName || user.last_name || '',
+  };
+};
+
 export const authService = {
   /**
    * Login user
@@ -16,7 +25,7 @@ export const authService = {
     // Store token
     localStorage.setItem('accessToken', accessToken);
 
-    return { user, accessToken };
+    return { user: mapUser(user), accessToken };
   },
 
   /**
@@ -29,7 +38,7 @@ export const authService = {
     // Store token
     localStorage.setItem('accessToken', accessToken);
 
-    return { user, accessToken };
+    return { user: mapUser(user), accessToken };
   },
 
   /**
@@ -48,7 +57,7 @@ export const authService = {
    */
   async getCurrentUser() {
     const response = await api.get('/auth/me');
-    return response.data.data.user;
+    return mapUser(response.data.data.user);
   },
 
   /**

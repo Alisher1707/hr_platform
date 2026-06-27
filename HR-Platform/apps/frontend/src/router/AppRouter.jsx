@@ -79,11 +79,17 @@ export function AppRouter() {
   }
 
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/apply" element={<RegisterPage />} />
 
         {/* Authenticated Layout Routes */}
         <Route
