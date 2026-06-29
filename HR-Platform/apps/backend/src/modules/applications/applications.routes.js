@@ -60,31 +60,31 @@ router.get(
   applicationsController.getApplicationById
 );
 
-// PATCH /api/v1/applications/:id/status - Update status (HR only)
+// PATCH /api/v1/applications/:id/status - Update status (HR, ADMIN)
 router.patch(
   '/:id/status',
   authenticate,
-  authorize(USER_ROLES.HR),
+  authorize(USER_ROLES.HR, USER_ROLES.ADMIN),
   validateParams(uuidParamSchema),
   validate(updateStatusSchema),
   applicationsController.updateApplicationStatus
 );
 
-// PATCH /api/v1/applications/:id/order - Update order (HR only)
+// PATCH /api/v1/applications/:id/order - Update order (HR, ADMIN)
 router.patch(
   '/:id/order',
   authenticate,
-  authorize(USER_ROLES.HR),
+  authorize(USER_ROLES.HR, USER_ROLES.ADMIN),
   validateParams(uuidParamSchema),
   validate(updateOrderSchema),
   applicationsController.updateApplicationOrder
 );
 
-// PUT /api/v1/applications/:id - Update application (HR only)
+// PUT /api/v1/applications/:id - Update application (HR, ADMIN)
 router.put(
   '/:id',
   authenticate,
-  authorize(USER_ROLES.HR),
+  authorize(USER_ROLES.HR, USER_ROLES.ADMIN),
   validateParams(uuidParamSchema),
   validate(updateApplicationSchema),
   applicationsController.updateApplication

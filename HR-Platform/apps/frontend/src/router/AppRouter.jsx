@@ -124,6 +124,14 @@ export function AppRouter() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/kanban"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                <KanbanPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* HR Routes */}
           <Route

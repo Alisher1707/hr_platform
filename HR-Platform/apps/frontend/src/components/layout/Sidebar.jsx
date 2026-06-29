@@ -58,17 +58,25 @@ export function Sidebar({ isOpen, toggleSidebar }) {
               <span>Dashboard</span>
             </NavLink>
 
-            <NavLink 
-              to="/admin/employees" 
+            <NavLink
+              to="/admin/employees"
               className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
             >
               <span className="sidebar-link-icon">👥</span>
               <span>Xodimlar</span>
             </NavLink>
 
+            <NavLink
+              to="/admin/kanban"
+              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            >
+              <span className="sidebar-link-icon">📋</span>
+              <span>Kanban Doska</span>
+            </NavLink>
+
             {isSuperAdmin && (
-              <NavLink 
-                to="/admin/invites" 
+              <NavLink
+                to="/admin/invites"
                 className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
               >
                 <span className="sidebar-link-icon">🔗</span>
