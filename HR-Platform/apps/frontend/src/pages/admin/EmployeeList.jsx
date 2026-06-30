@@ -179,10 +179,14 @@ export function EmployeeList() {
                 <thead>
                   <tr>
                     <th>Ism Familiya</th>
+                    <th>Filial</th>
+                    <th>Bo'lim</th>
+                    <th>Lavozim</th>
+                    <th>Xodim raqami</th>
+                    <th>Holat</th>
+                    <th>Oylik</th>
                     <th>Telefon</th>
                     <th>Manzil</th>
-                    <th>Tajriba</th>
-                    <th>Yoshi</th>
                     <th style={{ textAlign: 'right' }}>Amallar</th>
                   </tr>
                 </thead>
@@ -192,22 +196,30 @@ export function EmployeeList() {
                       <td>
                         <div className="font-semibold">{emp.first_name} {emp.last_name}</div>
                       </td>
-                      <td>{emp.phone || 'Kiritilmagan'}</td>
+                      <td>{emp.branch ? emp.branch.charAt(0).toUpperCase() + emp.branch.slice(1) : 'Yo\'q'}</td>
+                      <td>{emp.department ? emp.department.charAt(0).toUpperCase() + emp.department.slice(1) : 'Yo\'q'}</td>
+                      <td>{emp.position ? emp.position.charAt(0).toUpperCase() + emp.position.slice(1) : 'Yo\'q'}</td>
+                      <td>{emp.employee_number || 'Yo\'q'}</td>
                       <td>
-                        <div className="truncate" style={{ maxWidth: '200px' }}>
-                          {emp.address || 'Kiritilmagan'}
+                        <span className={`status-badge status-${emp.status?.toLowerCase().replace(/['\s]/g, '')}`}>
+                          {emp.status || 'Faol'}
+                        </span>
+                      </td>
+                      <td>{emp.salary_amount ? `${emp.salary_amount.toLocaleString()} UZS` : 'Yo\'q'}</td>
+                      <td>{emp.phone || 'Yo\'q'}</td>
+                      <td>
+                        <div className="truncate" style={{ maxWidth: '150px' }}>
+                          {emp.address || 'Yo\'q'}
                         </div>
                       </td>
-                      <td>{emp.experience ? `${emp.experience} yil` : 'Yo\'q'}</td>
-                      <td>{emp.age ? `${emp.age} yosh` : 'Kiritilmagan'}</td>
                       <td>
                         <div className="table-actions" style={{ justifyContent: 'flex-end' }}>
                           <Button variant="outline" size="sm" onClick={() => handleEditClick(emp)}>
                             Tahrirlash
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleDelete(emp.id)}
                             style={{ color: 'var(--error)' }}
                           >
