@@ -23,7 +23,15 @@
       "Bash(docker exec hr_platform_frontend sh -c \"cat /app/src/components/layout/Sidebar.jsx\")",
       "Bash(docker-compose logs frontend --tail 30)",
       "Bash(npm run build)",
-      "Bash(docker cp dist/. hr_platform_frontend:/usr/share/nginx/html/)"
+      "Bash(docker cp dist/. hr_platform_frontend:/usr/share/nginx/html/)",
+      "Bash(docker ps --format \"table {{.Names}}\\t{{.Status}}\\t{{.Ports}}\")",
+      "Bash(docker exec hr_platform_backend node src/db/migrate.js)",
+      "Bash(docker-compose restart backend frontend)",
+      "Bash(docker exec hr_platform_frontend ls -la /app/src/components/kanban/)",
+      "Bash(docker-compose down frontend)",
+      "Bash(docker-compose up -d --build frontend)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s http://localhost:5173/assets/index-BFvUR7VH.js)"
     ],
     "deny": [],
     "ask": []

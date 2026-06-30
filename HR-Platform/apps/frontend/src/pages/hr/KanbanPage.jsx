@@ -145,6 +145,7 @@ export function KanbanPage() {
     if (s === 'KELDI') return 'Yangi ariza';
     if (s === 'QOSHILDI') return 'Suhbatda';
     if (s === 'SHARTNOMA') return 'Shartnoma tuzilgan';
+    if (s === 'RAD_ETILDI') return 'Rad etildi';
     return s;
   };
 
@@ -152,6 +153,7 @@ export function KanbanPage() {
     if (s === 'KELDI') return 'warning';
     if (s === 'QOSHILDI') return 'info';
     if (s === 'SHARTNOMA') return 'success';
+    if (s === 'RAD_ETILDI') return 'danger';
     return 'info';
   };
 
@@ -256,8 +258,8 @@ export function KanbanPage() {
               <Card style={{ padding: '1rem' }}>
                 <h5 style={{ fontWeight: '700', marginBottom: '0.75rem' }}>Bosqichni o'zgartirish</h5>
                 
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }} className="status-buttons">
-                  <Button 
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }} className="status-buttons">
+                  <Button
                     variant={selectedApp.status === 'KELDI' ? 'primary' : 'outline'}
                     size="sm"
                     disabled={changingStatus}
@@ -265,7 +267,7 @@ export function KanbanPage() {
                   >
                     Yangi Keldi
                   </Button>
-                  <Button 
+                  <Button
                     variant={selectedApp.status === 'QOSHILDI' ? 'primary' : 'outline'}
                     size="sm"
                     disabled={changingStatus}
@@ -273,13 +275,21 @@ export function KanbanPage() {
                   >
                     Suhbatga chaqirish
                   </Button>
-                  <Button 
+                  <Button
                     variant={selectedApp.status === 'SHARTNOMA' ? 'primary' : 'outline'}
                     size="sm"
                     disabled={changingStatus}
                     onClick={() => handleStatusChange(selectedApp.id, 'SHARTNOMA', statusComment || 'Shartnoma tuzishga kelishildi')}
                   >
                     Shartnoma imzolash
+                  </Button>
+                  <Button
+                    variant={selectedApp.status === 'RAD_ETILDI' ? 'danger' : 'outline'}
+                    size="sm"
+                    disabled={changingStatus}
+                    onClick={() => handleStatusChange(selectedApp.id, 'RAD_ETILDI', statusComment || 'Ariza rad etildi')}
+                  >
+                    Rad etish
                   </Button>
                 </div>
 
