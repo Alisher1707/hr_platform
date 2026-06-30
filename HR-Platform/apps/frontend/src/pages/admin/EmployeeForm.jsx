@@ -265,270 +265,239 @@ export function EmployeeForm({ employee = null, onSubmitSuccess, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {/* Employee Number & Full Name */}
-      <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '1rem' }} className="form-row">
-        <Input
-          label="Xodim raqami"
-          type="text"
-          name="employeeNumber"
-          value={formData.employeeNumber}
-          onChange={handleChange}
-          error={formErrors.employeeNumber}
-        />
-        <Input
-          label="Ism Familiya"
-          type="text"
-          name="fullName"
-          value={formData.fullName}
-          onChange={handleChange}
-          placeholder="Alisher Karimov"
-          error={formErrors.fullName}
-          required
-        />
-      </div>
+    <form onSubmit={handleSubmit} className="employee-form">
+      {/* Two Column Layout */}
+      <div className="form-grid">
+        {/* Left Column */}
+        <div className="form-column">
+          {/* Xodim raqami */}
+          <div className="form-field">
+            <label className="form-label">Xodim raqami</label>
+            <input
+              type="text"
+              name="employeeNumber"
+              value={formData.employeeNumber}
+              onChange={handleChange}
+              className="form-input"
+            />
+          </div>
 
-      {/* Branch & Bo'lim */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="form-row">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="form-label">
-            Filial <span style={{ color: 'var(--error)' }}>*</span>
-          </label>
-          <select
-            name="branch"
-            value={formData.branch}
-            onChange={handleChange}
-            className="form-input"
-            style={{
-              padding: '0.75rem 1rem',
-              background: 'var(--bg-primary)',
-              border: `1px solid ${formErrors.branch ? 'var(--error)' : 'var(--border)'}`,
-              borderRadius: 'var(--radius-lg)',
-              fontSize: '0.875rem',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-            }}
-          >
-            {branches.map((branch) => (
-              <option key={branch.value} value={branch.value}>
-                {branch.label}
-              </option>
-            ))}
-          </select>
-          {formErrors.branch && (
-            <span style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{formErrors.branch}</span>
-          )}
+          {/* Filial */}
+          <div className="form-field">
+            <label className="form-label">
+              Filial <span className="required">*</span>
+            </label>
+            <select
+              name="branch"
+              value={formData.branch}
+              onChange={handleChange}
+              className={`form-input ${formErrors.branch ? 'input-error' : ''}`}
+            >
+              {branches.map((branch) => (
+                <option key={branch.value} value={branch.value}>
+                  {branch.label}
+                </option>
+              ))}
+            </select>
+            {formErrors.branch && <span className="error-text">{formErrors.branch}</span>}
+          </div>
+
+          {/* Lavozim */}
+          <div className="form-field">
+            <label className="form-label">
+              Lavozim <span className="required">*</span>
+            </label>
+            <select
+              name="position"
+              value={formData.position}
+              onChange={handleChange}
+              className={`form-input ${formErrors.position ? 'input-error' : ''}`}
+            >
+              {positions.map((pos) => (
+                <option key={pos.value} value={pos.value}>
+                  {pos.label}
+                </option>
+              ))}
+            </select>
+            {formErrors.position && <span className="error-text">{formErrors.position}</span>}
+          </div>
+
+          {/* Tug'ilgan kuni */}
+          <div className="form-field">
+            <label className="form-label">Tug'ilgan kuni (ixtiyoriy)</label>
+            <input
+              type="date"
+              name="birthDate"
+              value={formData.birthDate}
+              onChange={handleChange}
+              className="form-input"
+            />
+          </div>
+
+          {/* Telefon */}
+          <div className="form-field">
+            <label className="form-label">Telefon</label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="+998 90 123 45 67"
+              className={`form-input ${formErrors.phone ? 'input-error' : ''}`}
+            />
+            {formErrors.phone && <span className="error-text">{formErrors.phone}</span>}
+          </div>
+
+          {/* Maosh turi */}
+          <div className="form-field">
+            <label className="form-label">Maosh turi</label>
+            <select
+              name="salaryType"
+              value={formData.salaryType}
+              onChange={handleChange}
+              className="form-input"
+            >
+              <option value="Oylik">Oylik</option>
+              <option value="Haftalik">Haftalik</option>
+              <option value="15 Kunlik">15 Kunlik</option>
+              <option value="Kunlik">Kunlik</option>
+              <option value="Soatlik">Soatlik</option>
+            </select>
+          </div>
+
+          {/* Holat */}
+          <div className="form-field">
+            <label className="form-label">Holat</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="form-input"
+            >
+              <option value="Faol">Faol</option>
+              <option value="Nofaol">Nofaol</option>
+              <option value="Ta'tilda">Ta'tilda</option>
+              <option value="Bekor qilingan">Bekor qilingan</option>
+            </select>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="form-label">Bo'lim</label>
-          <select
-            name="department"
-            value={formData.department}
-            onChange={handleChange}
-            className="form-input"
-            style={{
-              padding: '0.75rem 1rem',
-              background: 'var(--bg-primary)',
-              border: `1px solid ${formErrors.department ? 'var(--error)' : 'var(--border)'}`,
-              borderRadius: 'var(--radius-lg)',
-              fontSize: '0.875rem',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-            }}
-          >
-            {departments.map((dept) => (
-              <option key={dept.value} value={dept.value}>
-                {dept.label}
-              </option>
-            ))}
-          </select>
-          {formErrors.department && (
-            <span style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{formErrors.department}</span>
-          )}
-        </div>
-      </div>
+        {/* Right Column */}
+        <div className="form-column">
+          {/* Ism Familiya */}
+          <div className="form-field">
+            <label className="form-label">
+              Ism Familiya <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              placeholder="Alisher Karimov"
+              className={`form-input ${formErrors.fullName ? 'input-error' : ''}`}
+            />
+            {formErrors.fullName && <span className="error-text">{formErrors.fullName}</span>}
+          </div>
 
-      {/* Position (Lavozim) & Join Date */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="form-row">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="form-label">
-            Lavozim <span style={{ color: 'var(--error)' }}>*</span>
-          </label>
-          <select
-            name="position"
-            value={formData.position}
-            onChange={handleChange}
-            className="form-input"
-            style={{
-              padding: '0.75rem 1rem',
-              background: 'var(--bg-primary)',
-              border: `1px solid ${formErrors.position ? 'var(--error)' : 'var(--border)'}`,
-              borderRadius: 'var(--radius-lg)',
-              fontSize: '0.875rem',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-            }}
-          >
-            {positions.map((pos) => (
-              <option key={pos.value} value={pos.value}>
-                {pos.label}
-              </option>
-            ))}
-          </select>
-          {formErrors.position && (
-            <span style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{formErrors.position}</span>
-          )}
-        </div>
+          {/* Bo'lim */}
+          <div className="form-field">
+            <label className="form-label">Bo'lim</label>
+            <select
+              name="department"
+              value={formData.department}
+              onChange={handleChange}
+              className="form-input"
+            >
+              {departments.map((dept) => (
+                <option key={dept.value} value={dept.value}>
+                  {dept.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <Input
-          label="Ishga kirgan sana"
-          type="date"
-          name="joinDate"
-          value={formData.joinDate}
-          onChange={handleChange}
-          error={formErrors.joinDate}
-          required
-        />
-      </div>
+          {/* Ishga kirgan sana */}
+          <div className="form-field">
+            <label className="form-label">
+              Ishga kirgan sana <span className="required">*</span>
+            </label>
+            <input
+              type="date"
+              name="joinDate"
+              value={formData.joinDate}
+              onChange={handleChange}
+              className={`form-input ${formErrors.joinDate ? 'input-error' : ''}`}
+            />
+            {formErrors.joinDate && <span className="error-text">{formErrors.joinDate}</span>}
+          </div>
 
-      {/* Birth Date & PNFL */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="form-row">
-        <Input
-          label="Tug'ilgan kuni (ixtiyoriy)"
-          type="date"
-          name="birthDate"
-          value={formData.birthDate}
-          onChange={handleChange}
-          error={formErrors.birthDate}
-        />
-        <Input
-          label="PNFL (ixtiyoriy)"
-          type="text"
-          name="pnfl"
-          value={formData.pnfl}
-          onChange={handleChange}
-          placeholder="12345678901234"
-          error={formErrors.pnfl}
-          maxLength={14}
-        />
-      </div>
+          {/* PNFL */}
+          <div className="form-field">
+            <label className="form-label">PNFL (ixtiyoriy)</label>
+            <input
+              type="text"
+              name="pnfl"
+              value={formData.pnfl}
+              onChange={handleChange}
+              placeholder="12345678901234"
+              maxLength={14}
+              className={`form-input ${formErrors.pnfl ? 'input-error' : ''}`}
+            />
+            {formErrors.pnfl && <span className="error-text">{formErrors.pnfl}</span>}
+          </div>
 
-      {/* Phone & Email */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="form-row">
-        <Input
-          label="Telefon"
-          type="text"
-          name="phone"
-          value={formData.phone}
-          onChange={handleChange}
-          placeholder="+998 90 123 45 67"
-          error={formErrors.phone}
-        />
-        <Input
-          label="Email"
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder="employee@company.com"
-          error={formErrors.email}
-        />
-      </div>
+          {/* Email */}
+          <div className="form-field">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="employee@company.com"
+              className={`form-input ${formErrors.email ? 'input-error' : ''}`}
+            />
+            {formErrors.email && <span className="error-text">{formErrors.email}</span>}
+          </div>
 
-      {/* Salary Type & Amount */}
-      <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '1rem' }} className="form-row">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="form-label">Maosh turi</label>
-          <select
-            name="salaryType"
-            value={formData.salaryType}
-            onChange={handleChange}
-            className="form-input"
-            style={{
-              padding: '0.75rem 1rem',
-              background: 'var(--bg-primary)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
-              fontSize: '0.875rem',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-            }}
-          >
-            <option value="Oylik">Oylik</option>
-            <option value="Haftalik">Haftalik</option>
-            <option value="15 Kunlik">15 Kunlik</option>
-            <option value="Kunlik">Kunlik</option>
-            <option value="Soatlik">Soatlik</option>
-          </select>
-        </div>
+          {/* Maosh miqdori */}
+          <div className="form-field">
+            <label className="form-label">
+              Maosh miqdori (UZS) <span className="required">*</span>
+            </label>
+            <input
+              type="number"
+              name="salaryAmount"
+              value={formData.salaryAmount}
+              onChange={handleChange}
+              placeholder="5000000"
+              className={`form-input ${formErrors.salaryAmount ? 'input-error' : ''}`}
+            />
+            {formErrors.salaryAmount && <span className="error-text">{formErrors.salaryAmount}</span>}
+          </div>
 
-        <Input
-          label="Maosh miqdori (UZS)"
-          type="number"
-          name="salaryAmount"
-          value={formData.salaryAmount}
-          onChange={handleChange}
-          placeholder="5000000"
-          error={formErrors.salaryAmount}
-          required
-        />
-      </div>
-
-      {/* Status & KPI Template */}
-      <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '1rem' }} className="form-row">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="form-label">Holat</label>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            className="form-input"
-            style={{
-              padding: '0.75rem 1rem',
-              background: 'var(--bg-primary)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
-              fontSize: '0.875rem',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-            }}
-          >
-            <option value="Faol">Faol</option>
-            <option value="Nofaol">Nofaol</option>
-            <option value="Ta'tilda">Ta'tilda</option>
-            <option value="Bekor qilingan">Bekor qilingan</option>
-          </select>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <label className="form-label">KPI Shablon</label>
-          <select
-            name="kpiTemplate"
-            value={formData.kpiTemplate}
-            onChange={handleChange}
-            className="form-input"
-            style={{
-              padding: '0.75rem 1rem',
-              background: 'var(--bg-primary)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
-              fontSize: '0.875rem',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-            }}
-          >
-            <option value="">— KPI shablon yo'q —</option>
-            <option value="standard">Standart KPI</option>
-            <option value="sales">Sotuv KPI</option>
-            <option value="technical">Texnik KPI</option>
-            <option value="management">Boshqaruv KPI</option>
-          </select>
+          {/* KPI Shablon */}
+          <div className="form-field">
+            <label className="form-label">KPI Shablon</label>
+            <select
+              name="kpiTemplate"
+              value={formData.kpiTemplate}
+              onChange={handleChange}
+              className="form-input"
+            >
+              <option value="">— KPI shablon yo'q —</option>
+              <option value="standard">Standart KPI</option>
+              <option value="sales">Sotuv KPI</option>
+              <option value="technical">Texnik KPI</option>
+              <option value="management">Boshqaruv KPI</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Photo Upload */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      {/* Photo Upload - Full Width */}
+      <div className="form-field-full">
         <label className="form-label">Xodim rasmi (yuz tekshiruvi uchun)</label>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <input
@@ -569,7 +538,7 @@ export function EmployeeForm({ employee = null, onSubmitSuccess, onCancel }) {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-3 mt-4" style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
+      <div className="form-actions">
         <Button variant="ghost" onClick={onCancel} disabled={submitting}>
           Bekor qilish
         </Button>
@@ -579,9 +548,88 @@ export function EmployeeForm({ employee = null, onSubmitSuccess, onCancel }) {
       </div>
 
       <style>{`
+        .employee-form {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
+        }
+
+        .form-column {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .form-field {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .form-field-full {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .form-label {
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: var(--text-primary);
+        }
+
+        .required {
+          color: var(--error);
+          margin-left: 2px;
+        }
+
+        .form-input {
+          width: 100%;
+          padding: 0.75rem 1rem;
+          background: var(--bg-primary);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          font-size: 0.875rem;
+          color: var(--text-primary);
+          transition: all 0.2s;
+          outline: none;
+        }
+
+        .form-input:focus {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .form-input::placeholder {
+          color: var(--text-secondary);
+        }
+
+        .input-error {
+          border-color: var(--error);
+        }
+
+        .error-text {
+          font-size: 0.75rem;
+          color: var(--error);
+        }
+
+        .form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.75rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid var(--border);
+        }
+
         @media (max-width: 768px) {
-          .form-row {
-            grid-template-columns: 1fr !important;
+          .form-grid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
