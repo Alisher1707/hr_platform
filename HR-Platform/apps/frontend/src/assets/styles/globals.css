@@ -972,7 +972,7 @@ a:hover {
 /* ========== KANBAN ========== */
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
   min-height: calc(100vh - 200px);
 }
@@ -985,6 +985,7 @@ a:hover {
   border: 1px solid var(--border);
   overflow: hidden;
   min-height: 400px;
+  max-height: 75vh;
 }
 
 .kanban-column-header {
@@ -1036,6 +1037,28 @@ a:hover {
   flex-direction: column;
   gap: 0.625rem;
   overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(75vh - 60px);
+}
+
+/* Custom scrollbar for kanban columns */
+.kanban-column-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.kanban-column-body::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0.5rem 0;
+}
+
+.kanban-column-body::-webkit-scrollbar-thumb {
+  background: var(--border-hover);
+  border-radius: var(--radius-full);
+  border: 2px solid var(--bg-secondary);
+}
+
+.kanban-column-body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }
 
 .kanban-column-body.drag-over {
