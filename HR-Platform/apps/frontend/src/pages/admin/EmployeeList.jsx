@@ -259,8 +259,8 @@ export function EmployeeList() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        title={editingEmployee ? "Xodim ma'lumotlarini tahrirlash" : "Yangi xodim va nomzod qo'shish"}
-        size="md"
+        title={editingEmployee ? "Xodim ma'lumotlarini tahrirlash" : "Yangi xodim qo'shish"}
+        size="lg"
       >
         <EmployeeForm
           employee={editingEmployee}
