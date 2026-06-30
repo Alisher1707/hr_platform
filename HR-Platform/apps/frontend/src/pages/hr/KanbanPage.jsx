@@ -223,40 +223,101 @@ export function KanbanPage() {
       <Modal
         isOpen={!!selectedApp}
         onClose={() => setSelectedApp(null)}
-        title="Nomzod haqida batafsil"
-        size="lg"
+        title="📋 Nomzod haqida batafsil ma'lumot"
+        size="xl"
       >
         {selectedApp && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }} className="modal-split">
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '2rem' }} className="modal-split">
             {/* Left side: Info & update details */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div>
-                <h4 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '0.25rem' }}>
-                  {selectedApp.firstName} {selectedApp.lastName}
-                </h4>
-                <div className="flex gap-2 items-center">
-                  <Badge variant={getStatusBadgeVariant(selectedApp.status)} showDot>
-                    {getStatusLabel(selectedApp.status)}
-                  </Badge>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    Lavozim: <strong>{selectedApp.position || 'Kiritilmagan'}</strong>
-                  </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {/* Candidate Header */}
+              <div style={{
+                background: 'linear-gradient(135deg, var(--accent-light) 0%, rgba(99, 102, 241, 0.05) 100%)',
+                padding: '1.5rem',
+                borderRadius: 'var(--radius-xl)',
+                border: '1px solid var(--accent)',
+                borderWidth: '2px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: 'var(--radius-lg)',
+                    background: 'var(--accent-gradient)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '1.75rem',
+                    fontWeight: '800',
+                    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
+                  }}>
+                    {selectedApp.firstName?.charAt(0)}{selectedApp.lastName?.charAt(0)}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>
+                      {selectedApp.firstName} {selectedApp.lastName}
+                    </h3>
+                    <div className="flex gap-2 items-center flex-wrap">
+                      <Badge variant={getStatusBadgeVariant(selectedApp.status)} showDot>
+                        {getStatusLabel(selectedApp.status)}
+                      </Badge>
+                      {selectedApp.position && (
+                        <span style={{
+                          fontSize: '0.875rem',
+                          color: 'var(--accent)',
+                          fontWeight: '600',
+                          background: 'var(--bg-card-solid)',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: 'var(--radius-full)',
+                          border: '1px solid var(--accent)'
+                        }}>
+                          💼 {selectedApp.position}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* General details table */}
-              <div style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', fontSize: '0.8125rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                  <div>📞 Tel: <strong>{selectedApp.phone || '—'}</strong></div>
-                  <div>💼 Tajriba: <strong>{selectedApp.experience ? `${selectedApp.experience} yil` : 'Yo\'q'}</strong></div>
-                  <div>📍 Manzil: <strong>{selectedApp.address || '—'}</strong></div>
-                  <div>📅 Yoshi: <strong>{selectedApp.age ? `${selectedApp.age} yosh` : '—'}</strong></div>
+              {/* General details card */}
+              <Card style={{ padding: '1.5rem', background: 'var(--bg-card)' }}>
+                <h5 style={{ fontWeight: '700', marginBottom: '1rem', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span>ℹ️</span> Umumiy ma'lumotlar
+                </h5>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>Telefon</span>
+                    <span style={{ fontSize: '0.9375rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                      {selectedApp.phone || '—'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>Tajriba</span>
+                    <span style={{ fontSize: '0.9375rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                      {selectedApp.experience ? `${selectedApp.experience} yil` : 'Tajribasiz'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>Yoshi</span>
+                    <span style={{ fontSize: '0.9375rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                      {selectedApp.age ? `${selectedApp.age} yosh` : '—'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>Manzil</span>
+                    <span style={{ fontSize: '0.9375rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                      {selectedApp.address || '—'}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              </Card>
 
               {/* Status transition section */}
-              <Card style={{ padding: '1rem' }}>
-                <h5 style={{ fontWeight: '700', marginBottom: '0.75rem' }}>Bosqichni o'zgartirish</h5>
+              <Card style={{ padding: '1.5rem', background: 'var(--bg-card)' }}>
+                <h5 style={{ fontWeight: '700', marginBottom: '1rem', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span>🔄</span> Bosqichni o'zgartirish
+                </h5>
                 
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }} className="status-buttons">
                   <Button
@@ -303,83 +364,153 @@ export function KanbanPage() {
               </Card>
 
               {/* Edit Application Form */}
-              <form onSubmit={handleSaveDetails} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <Select
-                  label="Mas'ul xodim"
-                  value={assignedTo}
-                  onChange={(e) => setAssignedTo(e.target.value)}
-                  options={allEmployees}
-                />
+              <Card style={{ padding: '1.5rem', background: 'var(--bg-card)' }}>
+                <h5 style={{ fontWeight: '700', marginBottom: '1rem', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span>✏️</span> Qo'shimcha ma'lumotlar
+                </h5>
+                <form onSubmit={handleSaveDetails} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  <Select
+                    label="Mas'ul xodim"
+                    value={assignedTo}
+                    onChange={(e) => setAssignedTo(e.target.value)}
+                    options={allEmployees}
+                  />
 
-                <Textarea
-                  label="Nomzod bo'yicha maxsus eslatmalar / izohlar"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Uchrashuv natijalari, rezyume bo'yicha kamchiliklar..."
-                  rows={3}
-                />
+                  <Textarea
+                    label="Nomzod bo'yicha maxsus eslatmalar / izohlar"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Uchrashuv natijalari, rezyume bo'yicha kamchiliklar..."
+                    rows={4}
+                  />
 
-                <Button 
-                  type="submit" 
-                  variant="primary" 
-                  loading={updatingInfo} 
-                  disabled={updatingInfo}
-                  style={{ alignSelf: 'flex-end' }}
-                >
-                  Izohlarni saqlash
-                </Button>
-              </form>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    loading={updatingInfo}
+                    disabled={updatingInfo}
+                    style={{ width: '100%' }}
+                  >
+                    💾 Saqlash
+                  </Button>
+                </form>
+              </Card>
             </div>
 
             {/* Right side: History timeline */}
-            <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>O'zgarishlar tarixi</h4>
+            <div style={{
+              background: 'var(--bg-secondary)',
+              borderRadius: 'var(--radius-xl)',
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              border: '1px solid var(--border)'
+            }}>
+              <h4 style={{ fontSize: '1.125rem', fontWeight: '800', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span>📜</span> O'zgarishlar tarixi
+              </h4>
               
               {loadingHistory ? (
-                <LoadingSpinner text="Tarix yuklanmoqda..." />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem' }}>
+                  <LoadingSpinner text="Tarix yuklanmoqda..." />
+                </div>
               ) : history.length === 0 ? (
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>O'zgarishlar tarixi mavjud emas.</div>
+                <div style={{
+                  textAlign: 'center',
+                  padding: '3rem 1rem',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.875rem',
+                  background: 'var(--bg-card)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px dashed var(--border)'
+                }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📋</div>
+                  O'zgarishlar tarixi mavjud emas
+                </div>
               ) : (
-                <div 
-                  style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    gap: '1rem', 
-                    overflowY: 'auto', 
-                    maxHeight: '400px',
-                    paddingRight: '0.5rem' 
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1.25rem',
+                    overflowY: 'auto',
+                    maxHeight: '500px',
+                    paddingRight: '0.75rem'
                   }}
                   className="timeline"
                 >
                   {history.map((log, index) => (
-                    <div key={log.id || index} style={{ position: 'relative', paddingLeft: '1rem' }}>
-                      <div 
-                        style={{ 
-                          position: 'absolute', 
-                          left: '0', 
-                          top: '5px', 
-                          width: '8px', 
-                          height: '8px', 
-                          borderRadius: '50%', 
-                          background: 'var(--accent)' 
-                        }} 
+                    <div key={log.id || index} style={{
+                      position: 'relative',
+                      paddingLeft: '1.75rem',
+                      paddingBottom: '1rem',
+                      borderBottom: index < history.length - 1 ? '1px dashed var(--border)' : 'none'
+                    }}>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: '0',
+                          top: '6px',
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          background: 'var(--accent)',
+                          border: '3px solid var(--bg-secondary)',
+                          boxShadow: '0 0 0 3px var(--accent-light)'
+                        }}
                       />
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        {formatDate(log.changedAt || log.changed_at)}
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-muted)',
+                        marginBottom: '0.5rem',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}>
+                        🕐 {formatDate(log.changedAt || log.changed_at)}
                       </div>
-                      <div style={{ fontSize: '0.8125rem', fontWeight: '600', color: 'var(--text-primary)' }}>
-                        Bosqich: <span className={`badge badge-${getStatusBadgeVariant(log.newStatus || log.new_status)}`} style={{ padding: '0.125rem 0.375rem', fontSize: '0.6875rem' }}>
+                      <div style={{
+                        fontSize: '0.875rem',
+                        fontWeight: '700',
+                        color: 'var(--text-primary)',
+                        marginBottom: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        flexWrap: 'wrap'
+                      }}>
+                        <span>Holat:</span>
+                        <Badge variant={getStatusBadgeVariant(log.newStatus || log.new_status)} showDot>
                           {getStatusLabel(log.newStatus || log.new_status)}
-                        </span>
+                        </Badge>
                       </div>
                       {log.comment && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic', background: 'var(--bg-secondary)', padding: '0.25rem 0.5rem', borderRadius: 'var(--radius-sm)', marginTop: '0.25rem' }}>
-                          "{log.comment}"
+                        <div style={{
+                          fontSize: '0.8125rem',
+                          color: 'var(--text-primary)',
+                          background: 'var(--bg-card)',
+                          padding: '0.75rem',
+                          borderRadius: 'var(--radius-lg)',
+                          marginTop: '0.5rem',
+                          borderLeft: '3px solid var(--accent)',
+                          lineHeight: '1.5'
+                        }}>
+                          💬 {log.comment}
                         </div>
                       )}
                       {log.changedBy && (
-                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>
-                          Kim tomonidan: {log.changedBy.firstName || log.changedBy.first_name} {log.changedBy.lastName || log.changedBy.last_name}
+                        <div style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--text-muted)',
+                          marginTop: '0.5rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.375rem'
+                        }}>
+                          <span>👤</span>
+                          <span style={{ fontWeight: '600' }}>
+                            {log.changedBy.firstName || log.changedBy.first_name} {log.changedBy.lastName || log.changedBy.last_name}
+                          </span>
                         </div>
                       )}
                     </div>

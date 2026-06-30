@@ -613,6 +613,13 @@ a:hover {
   border: 1px solid var(--status-shartnoma-border);
 }
 
+.badge-rad-etildi,
+.badge-danger {
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
 .badge-success {
   background: var(--success-bg);
   color: var(--success);
@@ -669,7 +676,9 @@ a:hover {
 
 .modal-sm { max-width: 400px; }
 .modal-md { max-width: 540px; }
-.modal-lg { max-width: 720px; }
+.modal-lg { max-width: 800px; }
+.modal-xl { max-width: 1000px; }
+.modal-2xl { max-width: 1200px; }
 
 .modal-header {
   display: flex;
@@ -1002,6 +1011,7 @@ a:hover {
 .kanban-column-dot.keldi { background: var(--status-keldi); }
 .kanban-column-dot.qoshildi { background: var(--status-qoshildi); }
 .kanban-column-dot.shartnoma { background: var(--status-shartnoma); }
+.kanban-column-dot.rad_etildi { background: var(--error); }
 
 .kanban-column-title {
   font-size: 0.875rem;
