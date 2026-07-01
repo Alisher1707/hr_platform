@@ -50,6 +50,9 @@
   --status-qoshildi: #3b82f6;
   --status-qoshildi-bg: rgba(59, 130, 246, 0.12);
   --status-qoshildi-border: rgba(59, 130, 246, 0.3);
+  --status-sinov-muddati: #8b5cf6;
+  --status-sinov-muddati-bg: rgba(139, 92, 246, 0.12);
+  --status-sinov-muddati-border: rgba(139, 92, 246, 0.3);
   --status-shartnoma: #10b981;
   --status-shartnoma-bg: rgba(16, 185, 129, 0.12);
   --status-shartnoma-border: rgba(16, 185, 129, 0.3);
@@ -132,6 +135,9 @@
   --status-qoshildi: #60a5fa;
   --status-qoshildi-bg: rgba(96, 165, 250, 0.15);
   --status-qoshildi-border: rgba(96, 165, 250, 0.3);
+  --status-sinov-muddati: #a78bfa;
+  --status-sinov-muddati-bg: rgba(167, 139, 250, 0.15);
+  --status-sinov-muddati-border: rgba(167, 139, 250, 0.3);
   --status-shartnoma: #34d399;
   --status-shartnoma-bg: rgba(52, 211, 153, 0.15);
   --status-shartnoma-border: rgba(52, 211, 153, 0.3);
@@ -972,7 +978,7 @@ a:hover {
 /* ========== KANBAN ========== */
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1.25rem;
   min-height: calc(100vh - 200px);
 }
@@ -1011,6 +1017,7 @@ a:hover {
 
 .kanban-column-dot.keldi { background: var(--status-keldi); }
 .kanban-column-dot.qoshildi { background: var(--status-qoshildi); }
+.kanban-column-dot.sinov_muddati { background: var(--status-sinov-muddati); }
 .kanban-column-dot.shartnoma { background: var(--status-shartnoma); }
 .kanban-column-dot.rad_etildi { background: var(--error); }
 

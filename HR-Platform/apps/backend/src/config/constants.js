@@ -13,10 +13,11 @@ export const USER_ROLES = {
 
 // Application Status for Kanban Board
 export const APPLICATION_STATUS = {
-  KELDI: 'KELDI',           // New application received
-  QOSHILDI: 'QOSHILDI',     // Application accepted
-  SHARTNOMA: 'SHARTNOMA',   // Contract signed
-  RAD_ETILDI: 'RAD_ETILDI', // Application rejected
+  KELDI: 'KELDI',               // New application received
+  QOSHILDI: 'QOSHILDI',         // Application accepted
+  SINOV_MUDDATI: 'SINOV_MUDDATI', // Trial period
+  SHARTNOMA: 'SHARTNOMA',       // Contract signed
+  RAD_ETILDI: 'RAD_ETILDI',     // Application rejected
 };
 
 // HTTP Status Codes

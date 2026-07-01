@@ -15,32 +15,17 @@ export async function createEmployee(employeeData, createdBy) {
   try {
     await client.query('BEGIN');
 
-    // Insert employee with all new fields
+    // Insert employee
     const employeeResult = await client.query(
-      `INSERT INTO employees (
-        employee_number, first_name, last_name, branch, department, position,
-        join_date, birth_date, pnfl, phone, email, address,
-        salary_type, salary_amount, status, kpi_template, experience, created_by
-      )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+      `INSERT INTO employees (first_name, last_name, phone, address, birth_date, experience, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
       [
-        employeeData.employeeNumber || null,
         employeeData.firstName,
         employeeData.lastName,
-        employeeData.branch || null,
-        employeeData.department || null,
-        employeeData.position || null,
-        employeeData.joinDate || null,
-        employeeData.birthDate || null,
-        employeeData.pnfl || null,
         employeeData.phone || null,
-        employeeData.email || null,
         employeeData.address || null,
-        employeeData.salaryType || 'Oylik',
-        employeeData.salaryAmount || null,
-        employeeData.status || 'Faol',
-        employeeData.kpiTemplate || null,
+        employeeData.birthDate || null,
         employeeData.experience || 0,
         createdBy,
       ]
@@ -96,7 +81,7 @@ export async function getAllEmployees(filters = {}, pagination = {}) {
   // Build WHERE clause
   if (filters.search) {
     whereClause.push(
-      `(e.first_name ILIKE $${paramCount} OR e.last_name ILIKE $${paramCount} OR e.phone ILIKE $${paramCount} OR e.email ILIKE $${paramCount})`
+      `(e.first_name ILIKE $${paramCount} OR e.last_name ILIKE $${paramCount} OR e.phone ILIKE $${paramCount})`
     );
     params.push(`%${filters.search}%`);
     paramCount++;
@@ -143,22 +128,11 @@ export async function getAllEmployees(filters = {}, pagination = {}) {
   return {
     employees: result.rows.map((row) => ({
       id: row.id,
-      employee_number: row.employee_number,
       first_name: row.first_name,
       last_name: row.last_name,
-      branch: row.branch,
-      department: row.department,
-      position: row.position,
-      join_date: row.join_date,
-      birth_date: row.birth_date,
-      pnfl: row.pnfl,
       phone: row.phone,
-      email: row.email,
       address: row.address,
-      salary_type: row.salary_type,
-      salary_amount: row.salary_amount ? parseFloat(row.salary_amount) : null,
-      status: row.status,
-      kpi_template: row.kpi_template,
+      birth_date: row.birth_date,
       age: row.age,
       experience: row.experience,
       created_at: row.created_at,
@@ -206,22 +180,11 @@ export async function getEmployeeById(id) {
 
   return {
     id: row.id,
-    employee_number: row.employee_number,
     first_name: row.first_name,
     last_name: row.last_name,
-    branch: row.branch,
-    department: row.department,
-    position: row.position,
-    join_date: row.join_date,
-    birth_date: row.birth_date,
-    pnfl: row.pnfl,
     phone: row.phone,
-    email: row.email,
     address: row.address,
-    salary_type: row.salary_type,
-    salary_amount: row.salary_amount ? parseFloat(row.salary_amount) : null,
-    status: row.status,
-    kpi_template: row.kpi_template,
+    birth_date: row.birth_date,
     age: row.age,
     experience: row.experience,
     created_at: row.created_at,
@@ -239,11 +202,7 @@ export async function getEmployeeById(id) {
  * Update employee
  */
 export async function updateEmployee(id, updates) {
-  const allowedFields = [
-    'employee_number', 'first_name', 'last_name', 'branch', 'department', 'position',
-    'join_date', 'birth_date', 'pnfl', 'phone', 'email', 'address',
-    'salary_type', 'salary_amount', 'status', 'kpi_template', 'experience'
-  ];
+  const allowedFields = ['first_name', 'last_name', 'phone', 'address', 'birth_date', 'experience'];
   const setClauses = [];
   const params = [];
   let paramCount = 1;

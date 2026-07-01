@@ -61,6 +61,7 @@ export async function getAllApplications(filters = {}) {
   const grouped = {
     [APPLICATION_STATUS.KELDI]: [],
     [APPLICATION_STATUS.QOSHILDI]: [],
+    [APPLICATION_STATUS.SINOV_MUDDATI]: [],
     [APPLICATION_STATUS.SHARTNOMA]: [],
     [APPLICATION_STATUS.RAD_ETILDI]: [],
   };

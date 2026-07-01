@@ -144,6 +144,7 @@ export function KanbanPage() {
   const getStatusLabel = (s) => {
     if (s === 'KELDI') return 'Yangi ariza';
     if (s === 'QOSHILDI') return 'Suhbatda';
+    if (s === 'SINOV_MUDDATI') return 'Sinov muddatida';
     if (s === 'SHARTNOMA') return 'Shartnoma tuzilgan';
     if (s === 'RAD_ETILDI') return 'Rad etildi';
     return s;
@@ -152,6 +153,7 @@ export function KanbanPage() {
   const getStatusBadgeVariant = (s) => {
     if (s === 'KELDI') return 'warning';
     if (s === 'QOSHILDI') return 'info';
+    if (s === 'SINOV_MUDDATI') return 'primary';
     if (s === 'SHARTNOMA') return 'success';
     if (s === 'RAD_ETILDI') return 'danger';
     return 'info';
@@ -335,6 +337,14 @@ export function KanbanPage() {
                     onClick={() => handleStatusChange(selectedApp.id, 'QOSHILDI', statusComment || 'Suhbatga chaqirildi')}
                   >
                     Suhbatga chaqirish
+                  </Button>
+                  <Button
+                    variant={selectedApp.status === 'SINOV_MUDDATI' ? 'primary' : 'outline'}
+                    size="sm"
+                    disabled={changingStatus}
+                    onClick={() => handleStatusChange(selectedApp.id, 'SINOV_MUDDATI', statusComment || 'Sinov muddatiga chaqirildi')}
+                  >
+                    Sinov Muddatiga chaqirish
                   </Button>
                   <Button
                     variant={selectedApp.status === 'SHARTNOMA' ? 'primary' : 'outline'}

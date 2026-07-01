@@ -14,13 +14,23 @@ import * as employeesService from './employees.service.js';
  */
 export const createEmployee = asyncHandler(async (req, res) => {
   const employeeData = {
+    employeeNumber: req.body.employeeNumber,
     firstName: req.body.firstName,
     lastName: req.body.lastName,
-    phone: req.body.phone,
-    address: req.body.address,
-    birthDate: req.body.birthDate,
-    experience: req.body.experience,
+    branch: req.body.branch,
+    department: req.body.department,
     position: req.body.position,
+    joinDate: req.body.joinDate,
+    birthDate: req.body.birthDate,
+    pnfl: req.body.pnfl,
+    phone: req.body.phone,
+    email: req.body.email,
+    address: req.body.address,
+    salaryType: req.body.salaryType,
+    salaryAmount: req.body.salaryAmount,
+    status: req.body.status,
+    kpiTemplate: req.body.kpiTemplate,
+    experience: req.body.experience,
     notes: req.body.notes,
   };
 
@@ -65,11 +75,22 @@ export const getEmployeeById = asyncHandler(async (req, res) => {
  */
 export const updateEmployee = asyncHandler(async (req, res) => {
   const updates = {
+    employeeNumber: req.body.employeeNumber,
     firstName: req.body.firstName,
     lastName: req.body.lastName,
-    phone: req.body.phone,
-    address: req.body.address,
+    branch: req.body.branch,
+    department: req.body.department,
+    position: req.body.position,
+    joinDate: req.body.joinDate,
     birthDate: req.body.birthDate,
+    pnfl: req.body.pnfl,
+    phone: req.body.phone,
+    email: req.body.email,
+    address: req.body.address,
+    salaryType: req.body.salaryType,
+    salaryAmount: req.body.salaryAmount,
+    status: req.body.status,
+    kpiTemplate: req.body.kpiTemplate,
     experience: req.body.experience,
   };
 

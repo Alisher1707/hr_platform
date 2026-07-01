@@ -34,6 +34,7 @@ export function KanbanBoard({ applications = [], onStatusChange, onCardClick }) 
   // Group applications by status
   const keldiApps = applications.filter(app => app.status === 'KELDI');
   const qoshildiApps = applications.filter(app => app.status === 'QOSHILDI');
+  const sinovMuddatiApps = applications.filter(app => app.status === 'SINOV_MUDDATI');
   const shartnomaApps = applications.filter(app => app.status === 'SHARTNOMA');
   const radEtildiApps = applications.filter(app => app.status === 'RAD_ETILDI');
 
@@ -50,6 +51,12 @@ export function KanbanBoard({ applications = [], onStatusChange, onCardClick }) 
           status="QOSHILDI"
           title="Suhbat / Qabul Qilingan"
           applications={qoshildiApps}
+          onCardClick={onCardClick}
+        />
+        <KanbanColumn
+          status="SINOV_MUDDATI"
+          title="Sinov Muddati"
+          applications={sinovMuddatiApps}
           onCardClick={onCardClick}
         />
         <KanbanColumn
